@@ -14,11 +14,13 @@ export const wbtbItems: CulturalItem[] = [
     year: 2014,
     locationText: 'Sebaran di Kecamatan Sukapura dan Sumber',
     district: 'Sukapura',
-    lat: -8.027716,
+    lat: -7.884686,
     lng: 112.947781,
     coordinateConfidence: 'exact',
     confidence: 'source-backed',
-    googleMapsUrl: 'https://www.google.com/maps?q=-8.027716,112.947781',
+    googleMapsUrl: 'https://www.google.com/maps?q=-7.884686,112.947781',
+    description:
+      'Upacara adat tahunan masyarakat Suku Tengger yang dilaksanakan di kawah Gunung Bromo pada bulan Kasada (ke-12 penanggalan Tengger). Masyarakat Tengger melarung sesaji berupa hasil bumi, ternak, dan berbagai persembahan ke kawah sebagai wujud syukur serta permohonan keselamatan kepada Sang Hyang Widhi. Tradisi turun-temurun ini berakar dari legenda pengorbanan Raden Kusuma, putra bungsu Rara Anteng dan Jaka Seger, dan telah ditetapkan sebagai Warisan Budaya Takbenda Indonesia pada tahun 2014.',
     sources: [
       { document: 'DAFTAR SEBARAN WBTB KABUPATEN PROBOLINGGO.pdf' },
       { document: 'geocoding_result.json', note: 'Pura Luhur Poten Bromo Sukapura' },
@@ -39,10 +41,12 @@ export const wbtbItems: CulturalItem[] = [
     district: 'Lumbang',
     lat: -7.826852,
     lng: 113.063289,
-    notes: 'Tidak muncul pada tabel WBTB ringkas di dokumen OPK. Ada di file WBTB khusus.',
+    notes: 'Tercatat di file WBTB khusus dan ditetapkan sebagai WBTB Indonesia tahun 2014. Tetap ditampilkan berdasarkan arahan Dinas.',
     coordinateConfidence: 'exact',
-    confidence: 'needs-validation',
+    confidence: 'source-backed',
     googleMapsUrl: 'https://www.google.com/maps?q=-7.826852,113.063289',
+    description:
+      'Kesenian tradisional khas Probolinggo berupa tarian kuda lumping (jaran kepang) yang dimainkan oleh para penari dengan menunggangi anyaman kuda tiruan dari bambu. Pertunjukan Jaran Bodhag menampilkan gerakan tari yang enerjik dan dinamis, sering kali diiringi musik gamelan serta menghadirkan unsur trance atau kerasukan sebagai ciri khasnya. Kesenian ini berkembang di wilayah Kecamatan Lumbang dan menjadi bagian penting dari identitas budaya masyarakat Probolinggo, ditetapkan sebagai Warisan Budaya Takbenda Indonesia pada tahun 2014.',
     sources: [
       { document: 'DAFTAR SEBARAN WBTB KABUPATEN PROBOLINGGO.pdf' },
       { document: 'OBJEK PEMAJUAN KEBUDAYAAN KAB PROBOLINGGO.pdf', note: 'Tidak tercantum di tabel WBTB' },
@@ -67,6 +71,8 @@ export const wbtbItems: CulturalItem[] = [
     coordinateConfidence: 'exact',
     confidence: 'source-backed',
     googleMapsUrl: 'https://www.google.com/maps?q=-7.884686,113.049649',
+    description:
+      'Ritual adat tolak bala masyarakat Suku Tengger yang bertujuan membersihkan diri dan lingkungan dari pengaruh buruk serta memohon perlindungan kepada leluhur. Upacara ini dipimpin oleh dukun pandhita dengan pembacaan mantra-mantra kuno dalam bahasa Tengger yang diwariskan secara lisan lintas generasi. Mecak-Tengger merupakan bagian integral dari siklus kehidupan masyarakat Tengger dan mencerminkan kearifan lokal dalam menjaga harmoni antara manusia, alam, dan roh leluhur, ditetapkan sebagai Warisan Budaya Takbenda Indonesia pada tahun 2016.',
     sources: [
       { document: 'DAFTAR SEBARAN WBTB KABUPATEN PROBOLINGGO.pdf' },
       { document: 'geocoding_result.json' },
@@ -90,6 +96,8 @@ export const wbtbItems: CulturalItem[] = [
     coordinateConfidence: 'exact',
     confidence: 'source-backed',
     googleMapsUrl: 'https://www.google.com/maps?q=-7.938934,113.116527',
+    description:
+      'Upacara adat kematian masyarakat Suku Tengger yang bertujuan untuk menyucikan arwah leluhur agar dapat mencapai alam keabadian. Ritual ini dipimpin oleh dukun pandhita dan melibatkan prosesi pembacaan doa-doa serta lantunan mantra dalam bahasa Jawa Kuno yang sarat makna spiritual. Entas-Entas mencerminkan filosofi kehidupan dan kematian masyarakat Tengger yang meyakini bahwa hubungan dengan leluhur harus terus dijaga melalui serangkaian upacara sakral, ditetapkan sebagai Warisan Budaya Takbenda Indonesia pada tahun 2016.',
     sources: [
       { document: 'DAFTAR SEBARAN WBTB KABUPATEN PROBOLINGGO.pdf' },
       { document: 'geocoding_result.json' },
@@ -114,6 +122,8 @@ export const wbtbItems: CulturalItem[] = [
     coordinateConfidence: 'exact',
     confidence: 'source-backed',
     googleMapsUrl: 'https://www.google.com/maps?q=-7.834113,113.231274',
+    description:
+      'Kuliner tradisional khas Kabupaten Probolinggo berupa sup daging sapi berkuah hitam pekat yang kaya akan bumbu kluwek (keluak). Berbeda dari rawon pada umumnya, Rawon Nguling memiliki cita rasa kluwek yang lebih kuat dan khas, dengan potongan daging yang lebih besar serta disajikan bersama taoge pendek, telur asin, dan sambal terasi. Resep turun-temurun ini berasal dari daerah Nguling, Kecamatan Tongas, dan telah menjadi ikon kuliner yang melegenda di Probolinggo, ditetapkan sebagai Warisan Budaya Takbenda Indonesia pada tahun 2018.',
     sources: [
       { document: 'DAFTAR SEBARAN WBTB KABUPATEN PROBOLINGGO.pdf', note: 'Typo dirapikan' },
       { document: 'geocoding_result.json' },
@@ -138,6 +148,8 @@ export const wbtbItems: CulturalItem[] = [
     coordinateConfidence: 'exact',
     confidence: 'source-backed',
     googleMapsUrl: 'https://www.google.com/maps?q=-7.844495,113.22904',
+    description:
+      'Seni pertunjukan tradisional yang memadukan unsur pencak silat, tari, dan teater rakyat dalam satu kesatuan pertunjukan yang dinamis. Berasal dari Desa Pendil, Kecamatan Leces, Kiprah Glipang menampilkan gerakan-gerakan lincah para penari yang diiringi musik tradisional khas dengan tempo yang bersemangat, menggambarkan semangat perjuangan dan kegembiraan masyarakat setempat. Kesenian ini telah menyebar ke seluruh wilayah Kabupaten Probolinggo dan menjadi kebanggaan budaya daerah, ditetapkan sebagai Warisan Budaya Takbenda Indonesia pada tahun 2019.',
     sources: [
       { document: 'DAFTAR SEBARAN WBTB KABUPATEN PROBOLINGGO.pdf' },
       { document: 'geocoding_result.json' },
