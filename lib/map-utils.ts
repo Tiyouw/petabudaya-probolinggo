@@ -7,7 +7,7 @@ export const MAP_BOUNDS = {
   ne: { lat: -7.60, lng: 113.9 },
 } as const;
 
-export const DEFAULT_ZOOM = 10;
+export const DEFAULT_ZOOM = 9;
 export const MAX_ZOOM = 16;
 export const MIN_ZOOM = 9;
 export const CLUSTER_ZOOM = 12;

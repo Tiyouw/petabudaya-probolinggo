@@ -2,6 +2,7 @@
 
 import { useRef, useCallback } from "react";
 import { motion, useInView } from "framer-motion";
+import { FileText, MessageCircle, Building2, Flame, Brain, Wrench, Palette, Languages, Gamepad2, Swords } from "lucide-react";
 import { opkCategories } from "@/data/opk";
 import { OPKCategory } from "@/data/types";
 import { useScrollSpy } from "@/hooks/useScrollSpy";
@@ -153,18 +154,19 @@ function OpkSectionContent({ category }: { category: OPKCategory }) {
   );
 }
 
-function getCategoryIcon(id: string): string {
-  const icons: Record<string, string> = {
-    manuskrip: "📜",
-    "tradisi-lisan": "🗣️",
-    "adat-istiadat": "🏛️",
-    ritus: "🕯️",
-    "pengetahuan-tradisional": "🧠",
-    "teknologi-tradisional": "⚙️",
-    seni: "🎭",
-    bahasa: "💬",
-    "permainan-rakyat": "🎯",
-    "olahraga-tradisional": "🤼",
+function getCategoryIcon(id: string): React.ReactNode {
+  const cls = "w-7 h-7";
+  const icons: Record<string, React.ReactNode> = {
+    manuskrip: <FileText className={cls} />,
+    "tradisi-lisan": <MessageCircle className={cls} />,
+    "adat-istiadat": <Building2 className={cls} />,
+    ritus: <Flame className={cls} />,
+    "pengetahuan-tradisional": <Brain className={cls} />,
+    "teknologi-tradisional": <Wrench className={cls} />,
+    seni: <Palette className={cls} />,
+    bahasa: <Languages className={cls} />,
+    "permainan-rakyat": <Gamepad2 className={cls} />,
+    "olahraga-tradisional": <Swords className={cls} />,
   };
-  return icons[id] || "📌";
+  return icons[id] || <Building2 className={cls} />;
 }

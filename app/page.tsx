@@ -3,6 +3,7 @@ import StatsSection from "@/components/stats/StatsSection";
 import CagarBudayaSection from "@/components/heritage/CagarBudayaSection";
 import WbtbShowcaseSection from "@/components/wbtb/WbtbShowcaseSection";
 import OpkShowcase from "@/components/opk/OpkShowcase";
+import CulturalOutro from "@/components/layout/CulturalOutro";
 import MapSection from "@/components/map/MapSection";
 
 export default function HomePage() {
@@ -35,6 +36,7 @@ export default function HomePage() {
       <CagarBudayaSection />
       <WbtbShowcaseSection />
       <OpkShowcase />
+      <CulturalOutro />
     </>
   );
 }

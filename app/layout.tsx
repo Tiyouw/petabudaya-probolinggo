@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Navbar from "@/components/layout/Navbar";
+import Sidebar from "@/components/layout/Sidebar";
 import Footer from "@/components/layout/Footer";
 import "./globals.css";
 
@@ -45,8 +45,8 @@ export default function RootLayout({
           Lewati ke konten utama
         </a>
 
-        <Navbar />
-        <main id="main-content" className="flex-1" tabIndex={-1}>
+        <Sidebar />
+        <main id="main-content" className="flex-1 mr-0 md:mr-[60px] pb-16 md:pb-0" tabIndex={-1}>
           {children}
         </main>
         <Footer />

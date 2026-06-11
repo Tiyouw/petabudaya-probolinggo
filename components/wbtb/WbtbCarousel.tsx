@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { Music, Building2, ChevronLeft, ChevronRight } from "lucide-react";
 import { CulturalItem } from "@/data/types";
 import Badge from "@/components/ui/Badge";
 
@@ -73,9 +74,11 @@ export default function WbtbCarousel({ items }: WbtbCarouselProps) {
       <div className="bg-white rounded-2xl shadow-card border border-[#DDD0C0] p-8 md:p-10">
         {/* Gradient placeholder */}
         <div className="w-full h-32 rounded-xl bg-gradient-to-br from-[#C0392B]/10 via-[#D4A843]/10 to-[#FAF5EE] mb-6 flex items-center justify-center">
-          <span className="text-4xl opacity-50" aria-hidden="true">
-            {item.category?.includes("Seni") ? "🎭" : "🏛️"}
-          </span>
+          {item.category?.includes("Seni") ? (
+            <Music size={48} className="text-[#C0392B] opacity-40" />
+          ) : (
+            <Building2 size={48} className="text-[#C0392B] opacity-40" />
+          )}
         </div>
 
         {/* Badges */}
@@ -123,9 +126,7 @@ export default function WbtbCarousel({ items }: WbtbCarouselProps) {
           className="w-10 h-10 rounded-full border border-[#DDD0C0] bg-white flex items-center justify-center text-[#6B4F3A] hover:border-[#C0392B] hover:text-[#C0392B] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C0392B]"
           aria-label="Previous"
         >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M10 3L5 8l5 5" />
-          </svg>
+          <ChevronLeft size={18} />
         </button>
 
         {/* Dots */}
@@ -149,9 +150,7 @@ export default function WbtbCarousel({ items }: WbtbCarouselProps) {
           className="w-10 h-10 rounded-full border border-[#DDD0C0] bg-white flex items-center justify-center text-[#6B4F3A] hover:border-[#C0392B] hover:text-[#C0392B] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C0392B]"
           aria-label="Next"
         >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M6 3l5 5-5 5" />
-          </svg>
+          <ChevronRight size={18} />
         </button>
       </div>
 

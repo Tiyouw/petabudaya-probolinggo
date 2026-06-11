@@ -10,28 +10,47 @@ import Map, {
   ViewStateChangeEvent,
 } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
+import { X } from "lucide-react";
 import { CulturalItem } from "@/data/types";
 import { allCulturalSites } from "@/data/cultural-sites";
 import { wbtbItems } from "@/data/wbtb";
-import { MAP_BOUNDS, DEFAULT_ZOOM, MAX_ZOOM, MIN_ZOOM, CLUSTER_ZOOM, PinLayerType, getPinBadge, buildGoogleMapsUrl } from "@/lib/map-utils";
+import {
+  MAP_BOUNDS,
+  DEFAULT_ZOOM,
+  MAX_ZOOM,
+  MIN_ZOOM,
+  getPinBadge,
+  buildGoogleMapsUrl,
+} from "@/lib/map-utils";
 import Badge from "@/components/ui/Badge";
 import MapFilterBar from "./MapFilterBar";
 import { useMapFilter } from "@/hooks/useMapFilter";
+import boundaryData from "@/data/probolinggo-boundary.json";
 
 const MAPTILER_KEY = "GuKF8sEbZEmRlalTzWEl";
 
-function getPinIcon(color: string, size: number) {
+// SVGs for pin icons (not lucide-react — MapLibre markers need raw HTML/SVG strings)
+const pinIcons: Record<string, string> = {
+  "cagar-budaya":
+    '<rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/>',
+  odcb:
+    '<circle cx="12" cy="12" r="9"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+  wbtb:
+    '<polygon points="12,2 15,9 22,9 16,14 18,21 12,17 6,21 8,14 2,9 9,9"/>',
+};
+
+function getPinSvg(type: string, color: string, size: number): string {
+  const inner = pinIcons[type] || pinIcons["odcb"];
   return `
-    <svg width="${size}" height="${size}" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="18" cy="14" r="12" fill="${color}" opacity="0.2"/>
-      <circle cx="18" cy="14" r="8" fill="${color}" stroke="white" stroke-width="2"/>
-      <path d="M18 34 L10 20 L26 20 Z" fill="${color}"/>
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${
+    size + 8
+  }" viewBox="0 0 24 32" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="10" r="9" fill="${color}" opacity="0.25"/>
+      <circle cx="12" cy="10" r="7" fill="${color}" stroke="white" stroke-width="2"/>
+      ${inner.replace(/stroke="[^"]*"/g, 'stroke="white" stroke-width="1.5"')}
+      <polygon points="12,28 7,18 17,18" fill="${color}"/>
     </svg>
   `;
-}
-
-function getPinDataUrl(color: string, size: number): string {
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(getPinIcon(color, size))}`;
 }
 
 // Merge all mappable items
@@ -40,22 +59,28 @@ const allItems: CulturalItem[] = [
   ...wbtbItems,
 ].filter((item) => item.lat !== undefined && item.lng !== undefined);
 
-export default function CultureMap() {
+export default function CultureMap({
+  isFullscreen = false,
+}: {
+  isFullscreen?: boolean;
+}) {
   const mapRef = useRef<MapRef>(null);
-  const { activeLayers, toggleLayer, selectedItemId, selectItem } = useMapFilter({
-    defaultLayers: ["cb", "odcb", "wbtb"],
-  });
+  const { activeLayers, toggleLayer, selectedItemId, selectItem } =
+    useMapFilter({
+      defaultLayers: ["cb", "odcb", "wbtb"],
+    });
   const [popupItem, setPopupItem] = useState<CulturalItem | null>(null);
 
   const [viewState, setViewState] = useState<Partial<ViewState>>({
-    latitude: -7.73,
-    longitude: 113.57,
+    latitude: -7.75,
+    longitude: 113.45,
     zoom: DEFAULT_ZOOM,
   });
 
   const filteredItems = useMemo(() => {
     return allItems.filter((item) => {
-      if (activeLayers.includes("cb") && item.type === "cagar-budaya") return true;
+      if (activeLayers.includes("cb") && item.type === "cagar-budaya")
+        return true;
       if (activeLayers.includes("odcb") && item.type === "odcb") return true;
       if (activeLayers.includes("wbtb") && item.type === "wbtb") return true;
       return false;
@@ -66,10 +91,13 @@ export default function CultureMap() {
     setViewState(evt.viewState);
   }, []);
 
-  const handleMarkerClick = useCallback((item: CulturalItem) => {
-    setPopupItem(item);
-    selectItem(item.id);
-  }, [selectItem]);
+  const handleMarkerClick = useCallback(
+    (item: CulturalItem) => {
+      setPopupItem(item);
+      selectItem(item.id);
+    },
+    [selectItem]
+  );
 
   const handleClosePopup = useCallback(() => {
     setPopupItem(null);
@@ -81,13 +109,61 @@ export default function CultureMap() {
     if (selectedItemId && mapRef.current) {
       const item = allItems.find((i) => i.id === selectedItemId);
       if (item?.lat && item?.lng) {
-        mapRef.current.flyTo({ center: [item.lng, item.lat], zoom: 13, duration: 1500 });
+        mapRef.current.flyTo({
+          center: [item.lng, item.lat],
+          zoom: 13,
+          duration: 1500,
+        });
       }
     }
   }, [selectedItemId]);
 
+  // GeoJSON boundary source + layers
+  useEffect(() => {
+    const map = mapRef.current?.getMap();
+    if (!map) return;
+
+    const addBoundary = () => {
+      if (map.getSource("probolinggo-boundary")) return;
+      map.addSource("probolinggo-boundary", {
+        type: "geojson",
+        data: boundaryData as unknown as GeoJSON.FeatureCollection,
+      });
+      map.addLayer({
+        id: "probolinggo-fill",
+        type: "fill",
+        source: "probolinggo-boundary",
+        paint: {
+          "fill-color": "#C0392B",
+          "fill-opacity": 0.06,
+        },
+      });
+      map.addLayer({
+        id: "probolinggo-outline",
+        type: "line",
+        source: "probolinggo-boundary",
+        paint: {
+          "line-color": "#C0392B",
+          "line-width": 2.5,
+          "line-opacity": 0.5,
+          "line-dasharray": [4, 2],
+        },
+      });
+    };
+
+    if (map.isStyleLoaded()) {
+      addBoundary();
+    } else {
+      map.once("style.load", addBoundary);
+    }
+  }, []);
+
   return (
-    <div className="relative w-full h-[600px] md:h-[700px] rounded-2xl overflow-hidden shadow-map border border-[#DDD0C0]">
+    <div
+      className={`relative w-full rounded-2xl overflow-hidden shadow-map border border-[#DDD0C0] ${
+        isFullscreen ? "h-full" : "h-[600px] md:h-[700px]"
+      }`}
+    >
       <Map
         ref={mapRef}
         {...viewState}
@@ -124,66 +200,38 @@ export default function CultureMap() {
               <div
                 className="cursor-pointer transition-transform hover:scale-125"
                 title={item.name}
-              >
-                <div
-                  style={{
-                    width: badge.pinSize,
-                    height: badge.pinSize + 10,
-                    position: "relative",
-                  }}
-                >
-                  {/* Simple CSS pin */}
-                  <div
-                    style={{
-                      width: badge.pinSize,
-                      height: badge.pinSize,
-                      borderRadius: "50%",
-                      backgroundColor: badge.pinColor,
-                      border: "3px solid white",
-                      boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "white",
-                      fontSize: badge.pinSize * 0.4,
-                    }}
-                  >
-                    {item.type === "cagar-budaya" && "🏛"}
-                    {item.type === "odcb" && "?"}
-                    {item.type === "wbtb" && "✦"}
-                  </div>
-                  {/* Pin tail */}
-                  <div
-                    style={{
-                      width: 0,
-                      height: 0,
-                      borderLeft: "6px solid transparent",
-                      borderRight: "6px solid transparent",
-                      borderTop: `10px solid ${badge.pinColor}`,
-                      margin: "0 auto",
-                      marginTop: -2,
-                    }}
-                  />
-                </div>
-              </div>
+                dangerouslySetInnerHTML={{
+                  __html: getPinSvg(item.type, badge.pinColor, badge.pinSize),
+                }}
+              />
             </Marker>
           );
         })}
 
-        {/* Popup */}
+        {/* Popup with large close button */}
         {popupItem && popupItem.lat && popupItem.lng && (
           <Popup
             latitude={popupItem.lat}
             longitude={popupItem.lng}
             anchor="top"
-            offset={30}
-            closeButton={true}
+            offset={36}
+            closeButton={false}
             closeOnClick={false}
             onClose={handleClosePopup}
             maxWidth="320px"
-            className="z-50"
+            className="z-50 [&_.maplibregl-popup-content]:!overflow-visible [&_.maplibregl-popup-content]:!rounded-xl [&_.maplibregl-popup-content]:!p-0"
           >
-            <PopupCard item={popupItem} />
+            <div className="relative p-4 min-w-[260px]">
+              {/* Custom close button — large, positioned outside */}
+              <button
+                onClick={handleClosePopup}
+                className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-white border border-[#DDD0C0] shadow-md flex items-center justify-center hover:bg-[#C0392B] hover:text-white hover:border-[#C0392B] transition-colors z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C0392B]"
+                aria-label="Tutup popup"
+              >
+                <X size={16} />
+              </button>
+              <PopupCard item={popupItem} />
+            </div>
           </Popup>
         )}
       </Map>
@@ -195,6 +243,27 @@ export default function CultureMap() {
       <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-card text-xs text-[#6B4F3A]">
         {filteredItems.length} objek budaya
       </div>
+
+      {/* Legend — visible in fullscreen mode */}
+      {isFullscreen && (
+        <div className="absolute bottom-6 right-6 z-10 bg-white/95 backdrop-blur-sm rounded-xl px-4 py-3 shadow-map border border-[#DDD0C0] text-xs">
+          <h4 className="font-semibold text-[#1C0F08] mb-2">Legenda</h4>
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#C0392B]" />
+              <span className="text-[#6B4F3A]">Cagar Budaya (5)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#8B5E34]" />
+              <span className="text-[#6B4F3A]">ODCB (54)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#D4A843]" />
+              <span className="text-[#6B4F3A]">WBTB (6)</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -205,10 +274,18 @@ function PopupCard({ item }: { item: CulturalItem }) {
   const mapsUrl = buildGoogleMapsUrl(item.lat, item.lng);
 
   return (
-    <div className="p-3 min-w-[240px]">
+    <div>
       <div className="flex flex-wrap gap-1 mb-2">
-        <Badge variant={badge.typeBadge as "type-cb" | "type-odcb" | "type-wbtb"}>{badge.label}</Badge>
-        {badge.isApprox && <Badge variant="status-approx">📍 Lokasi Perkiraan</Badge>}
+        <Badge
+          variant={
+            badge.typeBadge as "type-cb" | "type-odcb" | "type-wbtb"
+          }
+        >
+          {badge.label}
+        </Badge>
+        {badge.isApprox && (
+          <Badge variant="status-approx">Lokasi Perkiraan</Badge>
+        )}
       </div>
       <h4
         className="text-base font-display font-bold text-[#1C0F08] mb-1"
@@ -233,7 +310,7 @@ function PopupCard({ item }: { item: CulturalItem }) {
           rel="noopener noreferrer"
           className="flex-1 text-center text-xs px-3 py-1.5 rounded-lg bg-[#C0392B] text-white hover:bg-[#96231A] transition-colors no-underline"
         >
-          Maps ↗
+          Google Maps
         </a>
       </div>
     </div>

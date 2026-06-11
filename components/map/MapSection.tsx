@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 
-const CultureMap = dynamic(() => import("./CultureMap"), {
+const MapFullscreen = dynamic(() => import("./MapFullscreen"), {
   ssr: false,
   loading: () => (
     <div className="w-full h-[600px] md:h-[700px] rounded-2xl bg-[#F0E6D8] animate-pulse flex items-center justify-center">
@@ -12,5 +12,5 @@ const CultureMap = dynamic(() => import("./CultureMap"), {
 });
 
 export default function MapSection() {
-  return <CultureMap />;
+  return <MapFullscreen />;
 }
