@@ -64,6 +64,13 @@ export default function CulturalCard({
         </p>
       )}
 
+      {/* Description */}
+      {item.description && (
+        <p className="text-xs text-[#6B4F3A] line-clamp-2 leading-relaxed mb-2">
+          {item.description}
+        </p>
+      )}
+
       {/* Notes */}
       {item.notes && (
         <p className="text-xs text-[#6B4F3A] mt-2 italic">{item.notes}</p>

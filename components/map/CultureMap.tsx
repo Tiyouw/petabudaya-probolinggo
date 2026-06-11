@@ -29,35 +29,92 @@ import boundaryData from "@/data/probolinggo-boundary.json";
 
 const MAPTILER_KEY = "GuKF8sEbZEmRlalTzWEl";
 
-// SVGs for pin icons (not lucide-react — MapLibre markers need raw HTML/SVG strings)
-const pinIcons: Record<string, string> = {
-  "cagar-budaya":
-    '<rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/>',
-  odcb:
-    '<circle cx="12" cy="12" r="9"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
-  wbtb:
-    '<polygon points="12,2 15,9 22,9 16,14 18,21 12,17 6,21 8,14 2,9 9,9"/>',
-};
+// ---------------------------------------------------------------------------
+// Pin SVG generation
+// ---------------------------------------------------------------------------
+// Every pin uses a fixed 24×32 viewBox. The outer <svg> width/height scales
+// to the target pinSize so the same artwork works at all three sizes.
+//
+// Structure (top → bottom):
+//   1. Glow / halo circle           cx=12  cy=10  r=9   opacity 0.25
+//   2. Main filled circle + border  cx=12  cy=10  r=7   stroke-width 2
+//   3. White icon centered at (12,10) inside the circle  (~60 % of r=7)
+//   4. Triangle tail pointing down  12,28  7,18  17,18
+//
+// Icons use simple geometric paths – no nested <svg>, no tiny unreadable
+// rect/line combos.  Every path element explicitly sets fill / stroke so
+// nothing leaks from a parent attribute.
+// ---------------------------------------------------------------------------
 
-function getPinSvg(type: string, color: string, size: number): string {
-  const inner = pinIcons[type] || pinIcons["odcb"];
+/** Return the white icon body (one or more SVG elements) for a site type.
+ *  All coordinates are relative to the 24×32 viewBox; the icon is centered
+ *  at (12, 10) – the same centre as the filled circle. */
+function getPinIcon(type: string): string {
+  switch (type) {
+    /* ---------- Cagar Budaya – simple building (rectangle + triangle roof) ---------- */
+    case "cagar-budaya":
+      return (
+        // body
+        `<rect x="5.5" y="4" width="13" height="10" rx="1" fill="none" stroke="white" stroke-width="1.5"/>` +
+        // roof
+        `<polygon points="5.5,4 12,0.5 18.5,4" fill="none" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>` +
+        // door
+        `<rect x="9.5" y="8" width="5" height="6" rx="0.5" fill="none" stroke="white" stroke-width="1.5"/>`
+      );
+
+    /* ---------- ODCB – question mark ---------- */
+    case "odcb":
+      return (
+        // curved top + descending stem
+        `<path d="M9 4 C13 2.5 17 3.5 17 6.5 C17 9 14 9 12 11.5 L12 13.5" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"/>` +
+        // dot
+        `<circle cx="12" cy="16" r="1.2" fill="white"/>`
+      );
+
+    /* ---------- WBTB – 5‑point star ---------- */
+    case "wbtb":
+      return (
+        `<polygon points="12,1 13.8,6.5 19.6,6.5 14.9,10 16.7,15.5 12,12 7.3,15.5 9.1,10 4.4,6.5 10.2,6.5" fill="none" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>`
+      );
+
+    default:
+      return getPinIcon("odcb");
+  }
+}
+
+/** Build a complete pin SVG string ready for dangerouslySetInnerHTML /
+ *  MapLibre marker HTML.  The returned string is a single <svg> element with
+ *  no nested SVGs. */
+function buildPinSvg(type: string, color: string, size: number): string {
+  const icon = getPinIcon(type);
   return `
-    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${
-    size + 8
-  }" viewBox="0 0 24 32" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="10" r="9" fill="${color}" opacity="0.25"/>
-      <circle cx="12" cy="10" r="7" fill="${color}" stroke="white" stroke-width="2"/>
-      ${inner.replace(/stroke="[^"]*"/g, 'stroke="white" stroke-width="1.5"')}
-      <polygon points="12,28 7,18 17,18" fill="${color}"/>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="${size}"
+      height="${size + 8}"
+      viewBox="0 0 24 32"
+    >
+      <circle cx="12" cy="10" r="9" fill="${color}" opacity="0.25" />
+      <circle cx="12" cy="10" r="7" fill="${color}" stroke="white" stroke-width="2" />
+      ${icon}
+      <polygon points="12,28 7,18 17,18" fill="${color}" />
     </svg>
   `;
 }
+
+// ---------------------------------------------------------------------------
+// Data
+// ---------------------------------------------------------------------------
 
 // Merge all mappable items
 const allItems: CulturalItem[] = [
   ...allCulturalSites,
   ...wbtbItems,
 ].filter((item) => item.lat !== undefined && item.lng !== undefined);
+
+// ---------------------------------------------------------------------------
+// Main component
+// ---------------------------------------------------------------------------
 
 export default function CultureMap({
   isFullscreen = false,
@@ -96,7 +153,7 @@ export default function CultureMap({
       setPopupItem(item);
       selectItem(item.id);
     },
-    [selectItem]
+    [selectItem],
   );
 
   const handleClosePopup = useCallback(() => {
@@ -201,7 +258,11 @@ export default function CultureMap({
                 className="cursor-pointer transition-transform hover:scale-125"
                 title={item.name}
                 dangerouslySetInnerHTML={{
-                  __html: getPinSvg(item.type, badge.pinColor, badge.pinSize),
+                  __html: buildPinSvg(
+                    item.type,
+                    badge.pinColor,
+                    badge.pinSize,
+                  ),
                 }}
               />
             </Marker>
@@ -268,7 +329,10 @@ export default function CultureMap({
   );
 }
 
+// ---------------------------------------------------------------------------
 // Popup card
+// ---------------------------------------------------------------------------
+
 function PopupCard({ item }: { item: CulturalItem }) {
   const badge = getPinBadge(item);
   const mapsUrl = buildGoogleMapsUrl(item.lat, item.lng);
@@ -296,6 +360,11 @@ function PopupCard({ item }: { item: CulturalItem }) {
       <p className="text-xs text-[#6B4F3A] mb-3">
         {item.locationText || item.district || ""}
       </p>
+      {item.description && (
+        <p className="text-xs text-[#6B4F3A] line-clamp-3 mb-3">
+          {item.description}
+        </p>
+      )}
       <div className="flex gap-2">
         <button
           disabled

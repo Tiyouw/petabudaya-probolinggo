@@ -17,11 +17,22 @@ export const metadata: Metadata = {
     "Kebudayaan",
     "Jawa Timur",
   ],
+  icons: {
+    icon: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
   openGraph: {
     title: "PetaBudaya Probolinggo",
     description: "Jelajah budaya Kabupaten Probolinggo melalui peta interaktif.",
     type: "website",
     locale: "id_ID",
+    images: [
+      {
+        url: "https://petabudaya-probolinggo.vercel.app/og-image.png",
+        width: 1200,
+        height: 630,
+      },
+    ],
   },
   robots: {
     index: true,

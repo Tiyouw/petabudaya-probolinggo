@@ -25,6 +25,109 @@ const mainNav = [
   { id: "opk", label: "OPK", icon: Layers, href: "#opk" },
 ];
 
+// ─── Sidebar Logo Component ───────────────────────────────────────────────
+function SidebarLogo({ expanded }: { expanded: boolean }) {
+  const [hovered, setHovered] = useState(false);
+  const showText = expanded || hovered;
+
+  return (
+    <div
+      className="flex flex-col items-center gap-0.5 pt-4 pb-3 border-b border-[#2A1A10] overflow-visible"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <div className="flex items-center gap-2.5 px-[14px] min-h-[44px] overflow-visible">
+        {/* Logo mark — golden circle with "PB" monogram */}
+        <div className="relative w-[40px] h-[40px] flex-shrink-0 group/logo">
+          <svg
+            width="40"
+            height="40"
+            viewBox="0 0 40 40"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-full h-full drop-shadow-[0_2px_6px_rgba(212,168,67,0.35)] transition-all duration-300 group-hover/logo:drop-shadow-[0_2px_12px_rgba(212,168,67,0.55)]"
+          >
+            {/* Outer ring */}
+            <circle
+              cx="20"
+              cy="20"
+              r="19"
+              fill="#D4A843"
+              stroke="#F2C86B"
+              strokeWidth="1.5"
+            />
+            {/* Inner decorative ring */}
+            <circle
+              cx="20"
+              cy="20"
+              r="16"
+              fill="none"
+              stroke="#1C0F08"
+              strokeWidth="0.5"
+              strokeOpacity="0.3"
+              strokeDasharray="2 2"
+            />
+            {/* "PB" monogram */}
+            <text
+              x="20"
+              y="25"
+              textAnchor="middle"
+              fontFamily="'Playfair Display', Georgia, serif"
+              fontStyle="italic"
+              fontSize="15"
+              fontWeight="700"
+              fill="#1C0F08"
+            >
+              PB
+            </text>
+          </svg>
+          {/* Subtle glow ring on hover */}
+          <div className="absolute inset-0 rounded-full opacity-0 group-hover/logo:opacity-100 transition-opacity duration-300 pointer-events-none"
+            style={{
+              boxShadow: "0 0 16px 4px rgba(212,168,67,0.45)",
+            }}
+          />
+        </div>
+
+        {/* Brand name — reveals on logo hover or sidebar expansion */}
+        <motion.div
+          className="overflow-hidden whitespace-nowrap"
+          initial={false}
+          animate={{
+            opacity: showText ? 1 : 0,
+            width: showText ? "auto" : 0,
+            marginLeft: showText ? undefined : "-4px",
+          }}
+          transition={{ duration: 0.25, ease: "easeInOut" }}
+        >
+          <span
+            className="text-[#F2C86B] text-[13px] italic tracking-wide select-none"
+            style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+          >
+            PetaBudaya Probolinggo
+          </span>
+        </motion.div>
+      </div>
+
+      {/* Subtitle — visible only when sidebar is fully expanded */}
+      <AnimatePresence>
+        {expanded && (
+          <motion.p
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="text-[8px] text-[#8B7A6A] font-medium tracking-[0.13em] uppercase whitespace-nowrap overflow-hidden leading-none mt-1"
+          >
+            Dinas Kebudayaan dan Pariwisata
+          </motion.p>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ─── Main Sidebar Component ──────────────────────────────────────────────
 export default function Sidebar() {
   const [activeId, setActiveId] = useState("hero");
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -78,6 +181,7 @@ export default function Sidebar() {
       ?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
+  // ─── Mobile bottom bar ───────────────────────────────────────────────
   if (isMobile) {
     return (
       <nav
@@ -89,7 +193,9 @@ export default function Sidebar() {
             key={item.id}
             onClick={() => handleNav(item.id)}
             className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C0392B] ${
-              activeId === item.id ? "text-[#C0392B]" : "text-[#6B4F3A]"
+              activeId === item.id
+                ? "text-[#C0392B]"
+                : "text-[#C4B5A5] hover:text-[#DDD0C0]"
             }`}
           >
             <item.icon
@@ -132,16 +238,23 @@ export default function Sidebar() {
     );
   }
 
+  // ─── Desktop sidebar (right edge) ────────────────────────────────────
+  const isExpanded = expandedId !== null;
+
   return (
     <aside className="fixed right-0 top-0 bottom-0 z-50 flex items-center">
       <nav
-        className="bg-[#1C0F08] flex flex-col gap-0 py-4 rounded-l-2xl shadow-2xl border-l border-[#6B4F3A]"
+        className="bg-[#1C0F08] flex flex-col gap-0 rounded-l-2xl shadow-2xl border-l border-[#6B4F3A]"
         style={{
-          width: expandedId ? "236px" : "60px",
+          width: isExpanded ? "236px" : "60px",
           transition: "width 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
         }}
         aria-label="Navigasi utama"
       >
+        {/* Logo area */}
+        <SidebarLogo expanded={isExpanded} />
+
+        {/* Nav items */}
         {mainNav.map((item) => (
           <div key={item.id}>
             <button
@@ -149,7 +262,7 @@ export default function Sidebar() {
               className={`w-full flex items-center gap-3 px-[18px] py-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C0392B] lightsweep ${
                 activeId === item.id
                   ? "text-[#C0392B] border-r-[3px] border-r-[#C0392B] bg-[#C0392B]/10"
-                  : "text-[#6B4F3A] hover:text-[#DDD0C0] hover:bg-[#2A1A10]"
+                  : "text-[#C4B5A5] hover:text-[#DDD0C0] hover:bg-[#2A1A10]"
               }`}
               aria-label={item.label}
               aria-current={activeId === item.id ? "page" : undefined}
@@ -160,7 +273,7 @@ export default function Sidebar() {
               />
               <motion.span
                 className="text-sm font-medium whitespace-nowrap"
-                animate={{ opacity: expandedId ? 1 : 0 }}
+                animate={{ opacity: isExpanded ? 1 : 0 }}
                 transition={{ duration: 0.15 }}
               >
                 {item.label}

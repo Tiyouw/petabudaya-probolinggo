@@ -1,3 +1,5 @@
+import Logo from "@/components/ui/Logo";
+
 export default function Footer() {
   return (
     <footer
@@ -7,14 +9,20 @@ export default function Footer() {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-          {/* Brand */}
+          {/* Brand — logo on the left, text beside/below */}
           <div>
-            <h4
-              className="text-xl font-display font-bold mb-3"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              PetaBudaya Probolinggo
-            </h4>
+            {/* Logo + brand name row */}
+            <div className="flex items-center gap-4 mb-3">
+              <Logo size={72} className="shrink-0 opacity-90" />
+              <div>
+                <h4
+                  className="text-xl font-display font-bold"
+                  style={{ fontFamily: "var(--font-display)" }}
+                >
+                  PetaBudaya Probolinggo
+                </h4>
+              </div>
+            </div>
             <p className="text-sm text-[#DDD0C0] leading-relaxed">
               Dinas Kebudayaan dan Pariwisata
               <br />

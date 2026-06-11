@@ -113,6 +113,13 @@ export default function WbtbCarousel({ items }: WbtbCarouselProps) {
           {item.keterangan && ` · ${item.keterangan}`}
         </p>
 
+        {/* Description */}
+        {item.description && (
+          <p className="text-sm text-[#6B4F3A] leading-relaxed line-clamp-3 mb-3">
+            {item.description}
+          </p>
+        )}
+
         {/* Notes */}
         {item.notes && (
           <p className="text-xs text-[#6B4F3A] mt-2 italic">{item.notes}</p>
