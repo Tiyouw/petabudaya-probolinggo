@@ -1,26 +1,119 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
+/* ===== Design Tokens — PetaBudaya Probolinggo ===== */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Primary */
+  --color-primary:      #C0392B;
+  --color-primary-dark: #96231A;
+  --color-gold:         #D4A843;
+  --color-gold-light:   #F2C86B;
+
+  /* Background / Surface */
+  --color-cream:        #FAF5EE;
+  --color-surface:      #F0E6D8;
+  --color-border:       #DDD0C0;
+
+  /* Ink / Text */
+  --color-ink:          #1C0F08;
+  --color-ink-muted:    #6B4F3A;
+
+  /* Heritage Accents */
+  --color-earth:        #8B5E34;
+  --color-sage:         #5F7A4D;
+  --color-sage-light:   #A8BF8A;
+
+  /* Semantic */
+  --color-validation-bg:   #FEF3C7;
+  --color-validation-text: #92400E;
+  --color-approx-bg:       #EFF6FF;
+  --color-approx-text:     #1E40AF;
+
+  /* Typography */
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body:    'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+
+  /* Spacing */
+  --spacing-xs:   4px;
+  --spacing-sm:   8px;
+  --spacing-md:   16px;
+  --spacing-lg:   24px;
+  --spacing-xl:   40px;
+  --spacing-2xl:  64px;
+  --spacing-3xl:  96px;
+
+  /* Radius */
+  --radius-sm:    4px;
+  --radius-md:    8px;
+  --radius-lg:    12px;
+  --radius-xl:    20px;
+  --radius-pill:  9999px;
+
+  /* Shadows */
+  --shadow-card:  0 2px 8px rgba(28, 15, 8, 0.08);
+  --shadow-lift:  0 8px 24px rgba(28, 15, 8, 0.12);
+  --shadow-map:   0 4px 16px rgba(28, 15, 8, 0.16);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ===== Base Styles ===== */
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===== Pattern Overlay ===== */
+.pattern-overlay {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 7px,
+    rgba(192, 57, 43, 0.06) 7px,
+    rgba(192, 57, 43, 0.06) 8px
+  );
+}
+
+.pattern-overlay-heavy {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 7px,
+    rgba(192, 57, 43, 0.12) 7px,
+    rgba(192, 57, 43, 0.12) 8px
+  );
+}
+
+/* ===== Scroll Snap ===== */
+.snap-container {
+  scroll-snap-type: y mandatory;
+  overflow-y: scroll;
+  height: 100vh;
+}
+
+.snap-section {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  height: 100vh;
+}
+
+/* ===== Reduced Motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .snap-container {
+    scroll-snap-type: none;
+  }
 }

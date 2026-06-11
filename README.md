@@ -1,36 +1,79 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PetaBudaya Probolinggo
 
-## Getting Started
+Peta interaktif cagar budaya, warisan budaya tak benda (WBTB), dan objek pemajuan kebudayaan (OPK) Kabupaten Probolinggo.
 
-First, run the development server:
+Dibangun untuk **Dinas Kebudayaan dan Pariwisata Kabupaten Probolinggo** sebagai etalase digital resmi.
+
+## Tech Stack
+
+- **Framework:** Next.js 16 (App Router)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS + custom design tokens
+- **Animation:** Framer Motion
+- **Map:** react-map-gl + MapLibre GL JS + MapTiler
+- **Data:** Static TypeScript files (CMS-ready for Sanity.io migration)
+
+## Run Locally
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+## Deploy
 
-To learn more about Next.js, take a look at the following resources:
+Push to GitHub and connect to Vercel. No environment variables required for MVP.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### MapTiler Key
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Replace `MAPTILER_KEY` in `components/map/CultureMap.tsx` with a production key from [MapTiler](https://cloud.maptiler.com/).
 
-## Deploy on Vercel
+## Project Structure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+app/              → Next.js pages & layout
+components/
+  layout/         → Navbar, Footer, SectionShell
+  hero/           → Hero section
+  stats/          → Statistics section
+  map/            → CultureMap (react-map-gl) + filter
+  heritage/       → Cagar Budaya section + filter
+  wbtb/           → WBTB showcase + carousel
+  opk/            → OPK scroll-snap experience
+  scroll/         → Scroll progress navigation
+  ui/             → Button, Badge, CulturalCard
+data/             → TypeScript data files
+hooks/            → useScrollSpy, useMapFilter
+lib/              → map-utils, filters, stats
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Data Sources
+
+- `DAFTAR SEBARAN WBTB KABUPATEN PROBOLINGGO.pdf`
+- `OBJEK PEMAJUAN KEBUDAYAAN KAB PROBOLINGGO.pdf`
+- `PETA CAGAR BUDAYA.pdf`
+- `Screenshot 4.11 Cagar Budaya`
+- `geocoding_result.json` — OpenStreetMap/Nominatim geocoding (63 items)
+
+## Data Principles
+
+- **No fake precision** — koordinat tidak dikarang
+- Badge "📍 Lokasi Perkiraan" untuk data tanpa koordinat presisi
+- Badge "⚠️ Perlu Validasi" untuk data konflik
+- Semua data traceable ke dokumen sumber
+
+## Status
+
+**MVP** — Single-page dengan hash sections. TypeScript build sukses.
+
+Lihat `TODO_DATA.md` untuk item yang butuh konfirmasi dinas.
+Lihat `TODO_FUTURE.md` untuk roadmap Phase 2–4.
