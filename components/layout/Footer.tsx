@@ -1,5 +1,12 @@
 import Logo from "@/components/ui/Logo";
 
+const footerLinks = [
+  { href: "#peta", label: "Peta Sebaran Budaya" },
+  { href: "#cagar-budaya", label: "Cagar Budaya" },
+  { href: "#wbtb", label: "Warisan Budaya Tak Benda" },
+  { href: "#opk", label: "Objek Pemajuan Kebudayaan" },
+];
+
 export default function Footer() {
   return (
     <footer
@@ -36,38 +43,16 @@ export default function Footer() {
               Navigasi
             </h5>
             <ul className="space-y-2 text-sm">
-              <li>
-                <a
-                  href="#peta"
-                  className="text-[#DDD0C0] hover:text-white focus-visible:text-white focus-visible:underline transition-colors"
-                >
-                  Peta Sebaran Budaya
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#cagar-budaya"
-                  className="text-[#DDD0C0] hover:text-white focus-visible:text-white focus-visible:underline transition-colors"
-                >
-                  Cagar Budaya
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#wbtb"
-                  className="text-[#DDD0C0] hover:text-white focus-visible:text-white focus-visible:underline transition-colors"
-                >
-                  Warisan Budaya Tak Benda
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#opk"
-                  className="text-[#DDD0C0] hover:text-white focus-visible:text-white focus-visible:underline transition-colors"
-                >
-                  Objek Pemajuan Kebudayaan
-                </a>
-              </li>
+              {footerLinks.map((link) => (
+                <li key={link.href}>
+                  <a
+                    href={link.href}
+                    className="inline-block lightsweep text-[#DDD0C0] hover:text-white focus-visible:text-white focus-visible:underline transition-colors"
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))}
             </ul>
           </nav>
 

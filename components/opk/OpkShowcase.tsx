@@ -121,16 +121,25 @@ function OpkSectionContent({ category }: { category: OPKCategory }) {
           </div>
 
           {/* Right: Staggered item grid */}
-          <div className="grid grid-cols-2 gap-3 max-h-[400px] overflow-y-auto pr-2">
+          {/*
+            Mobile: horizontal scroll container with snap.
+            Tablet/Desktop (md+): 2-column grid with vertical scroll.
+          */}
+          <div
+            className="flex gap-3 overflow-x-auto snap-x snap-mandatory py-1 md:grid md:grid-cols-2 md:gap-3 md:overflow-visible md:max-h-[400px] md:pr-2 md:snap-none [&::-webkit-scrollbar]:hidden"
+            style={{ scrollbarWidth: "none" }}
+          >
             {category.items.map((item, i) => (
               <motion.div
                 key={item.id}
-                className="p-3 rounded-xl bg-[#FAF5EE] border border-[#F0E6D8] hover:shadow-card hover:scale-[1.02] transition-all"
+                className="min-w-[160px] flex-shrink-0 snap-start
+                           md:min-w-0
+                           p-3 rounded-xl bg-[#FAF5EE] border border-[#F0E6D8] hover:shadow-card hover:scale-[1.02] transition-all"
                 initial={{ opacity: 0, y: 20 }}
                 animate={leftInView ? { opacity: 1, y: 0 } : {}}
                 transition={{
                   duration: 0.35,
-                  delay: 0.15 + i * 0.04,
+                  delay: 0.15 + i * 0.06,
                   ease: "easeOut",
                 }}
               >
@@ -150,6 +159,7 @@ function OpkSectionContent({ category }: { category: OPKCategory }) {
           </div>
         </div>
       </div>
+
     </div>
   );
 }

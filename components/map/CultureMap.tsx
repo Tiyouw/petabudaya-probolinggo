@@ -10,7 +10,7 @@ import Map, {
   ViewStateChangeEvent,
 } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { X } from "lucide-react";
+import { AlertTriangle, X } from "lucide-react";
 import { CulturalItem } from "@/data/types";
 import { allCulturalSites } from "@/data/cultural-sites";
 import { wbtbItems } from "@/data/wbtb";
@@ -19,6 +19,7 @@ import {
   DEFAULT_ZOOM,
   MAX_ZOOM,
   MIN_ZOOM,
+  CLUSTER_ZOOM,
   getPinBadge,
   buildGoogleMapsUrl,
 } from "@/lib/map-utils";
@@ -47,7 +48,7 @@ const MAPTILER_KEY = "GuKF8sEbZEmRlalTzWEl";
 // ---------------------------------------------------------------------------
 
 /** Return the white icon body (one or more SVG elements) for a site type.
- *  All coordinates are relative to the 24×32 viewBox; the icon is centered
+ *  All coordinates are relative to the 24×32 viewBox; the icon is centred
  *  at (12, 10) – the same centre as the filled circle. */
 function getPinIcon(type: string): string {
   switch (type) {
@@ -103,6 +104,45 @@ function buildPinSvg(type: string, color: string, size: number): string {
 }
 
 // ---------------------------------------------------------------------------
+// Cluster utilities
+// ---------------------------------------------------------------------------
+
+const GRID_CELL_SIZE = 0.05; // ~5 km at the equator
+
+interface Cluster {
+  id: string;
+  lat: number;
+  lng: number;
+  count: number;
+  items: CulturalItem[];
+  dominantType: CulturalItem["type"];
+}
+
+function buildClusterColor(dominantType: CulturalItem["type"]): string {
+  switch (dominantType) {
+    case "cagar-budaya":
+      return "#C0392B";
+    case "odcb":
+      return "#8B5E34";
+    case "wbtb":
+      return "#D4A843";
+    default:
+      return "#6B4F3A";
+  }
+}
+
+function clusterSize(count: number): number {
+  // Scale from 44px (2 items) up to 72px (10+ items)
+  return Math.min(44 + (count - 2) * 3.5, 72);
+}
+
+function clusterFontSize(count: number): number {
+  if (count < 10) return 14;
+  if (count < 100) return 13;
+  return 11;
+}
+
+// ---------------------------------------------------------------------------
 // Data
 // ---------------------------------------------------------------------------
 
@@ -127,6 +167,7 @@ export default function CultureMap({
       defaultLayers: ["cb", "odcb", "wbtb"],
     });
   const [popupItem, setPopupItem] = useState<CulturalItem | null>(null);
+  const [mapError, setMapError] = useState(false);
 
   const [viewState, setViewState] = useState<Partial<ViewState>>({
     latitude: -7.75,
@@ -144,6 +185,55 @@ export default function CultureMap({
     });
   }, [activeLayers]);
 
+  const currentZoom = viewState.zoom ?? DEFAULT_ZOOM;
+  const isClustered = currentZoom < CLUSTER_ZOOM;
+
+  // -------------------------------------------------------------------------
+  // Grid-based clusters (zoom < CLUSTER_ZOOM)
+  // -------------------------------------------------------------------------
+  const clusters = useMemo<Cluster[] | null>(() => {
+    if (!isClustered) return null;
+
+    const grid: Record<string, CulturalItem[]> = {};
+
+    for (const item of filteredItems) {
+      const gridLat = Math.round(item.lat! / GRID_CELL_SIZE) * GRID_CELL_SIZE;
+      const gridLng = Math.round(item.lng! / GRID_CELL_SIZE) * GRID_CELL_SIZE;
+      const key = `${gridLat.toFixed(4)},${gridLng.toFixed(4)}`;
+      if (!grid[key]) grid[key] = [];
+      grid[key].push(item);
+    }
+
+    return Object.entries(grid).map(([key, items]) => {
+      const centerLat =
+        items.reduce((sum, it) => sum + it.lat!, 0) / items.length;
+      const centerLng =
+        items.reduce((sum, it) => sum + it.lng!, 0) / items.length;
+
+      // Dominant type by count
+      const typeCounts: Record<string, number> = {};
+      for (const item of items) {
+        typeCounts[item.type] = (typeCounts[item.type] ?? 0) + 1;
+      }
+      const dominantType = Object.entries(typeCounts).sort(
+        (a, b) => b[1] - a[1],
+      )[0][0] as CulturalItem["type"];
+
+      return {
+        id: `cluster-${key}`,
+        lat: centerLat,
+        lng: centerLng,
+        count: items.length,
+        items,
+        dominantType,
+      };
+    });
+  }, [filteredItems, isClustered]);
+
+  // -------------------------------------------------------------------------
+  // Handlers
+  // -------------------------------------------------------------------------
+
   const handleMove = useCallback((evt: ViewStateChangeEvent) => {
     setViewState(evt.viewState);
   }, []);
@@ -160,6 +250,18 @@ export default function CultureMap({
     setPopupItem(null);
     selectItem(null);
   }, [selectItem]);
+
+  const handleClusterClick = useCallback(
+    (cluster: Cluster) => {
+      const targetZoom = Math.min(currentZoom + 2, MAX_ZOOM);
+      mapRef.current?.flyTo({
+        center: [cluster.lng, cluster.lat],
+        zoom: targetZoom,
+        duration: 800,
+      });
+    },
+    [currentZoom],
+  );
 
   // Fly to a pinned item
   useEffect(() => {
@@ -217,85 +319,162 @@ export default function CultureMap({
 
   return (
     <div
-      className={`relative w-full rounded-2xl overflow-hidden shadow-map border border-[#DDD0C0] ${
+      className={`relative w-full rounded-2xl overflow-hidden shadow-map border ${
+        mapError ? "border-[#C0392B]" : "border-[#DDD0C0]"
+      } ${
         isFullscreen ? "h-full" : "h-[600px] md:h-[700px]"
       }`}
     >
-      <Map
-        ref={mapRef}
-        {...viewState}
-        onMove={handleMove}
-        mapStyle={`https://api.maptiler.com/maps/streets-v2-light/style.json?key=${MAPTILER_KEY}`}
-        maxBounds={[
-          MAP_BOUNDS.sw.lng,
-          MAP_BOUNDS.sw.lat,
-          MAP_BOUNDS.ne.lng,
-          MAP_BOUNDS.ne.lat,
-        ]}
-        maxZoom={MAX_ZOOM}
-        minZoom={MIN_ZOOM}
-        mapLib={import("maplibre-gl")}
-        style={{ width: "100%", height: "100%" }}
-        attributionControl={false}
-      >
-        <NavigationControl position="top-right" />
-
-        {/* Markers */}
-        {filteredItems.map((item) => {
-          const badge = getPinBadge(item);
-          return (
-            <Marker
-              key={item.id}
-              latitude={item.lat!}
-              longitude={item.lng!}
-              anchor="bottom"
-              onClick={(e) => {
-                e.originalEvent.stopPropagation();
-                handleMarkerClick(item);
-              }}
-            >
-              <div
-                className="cursor-pointer transition-transform hover:scale-125"
-                title={item.name}
-                dangerouslySetInnerHTML={{
-                  __html: buildPinSvg(
-                    item.type,
-                    badge.pinColor,
-                    badge.pinSize,
-                  ),
-                }}
-              />
-            </Marker>
-          );
-        })}
-
-        {/* Popup with large close button */}
-        {popupItem && popupItem.lat && popupItem.lng && (
-          <Popup
-            latitude={popupItem.lat}
-            longitude={popupItem.lng}
-            anchor="top"
-            offset={36}
-            closeButton={false}
-            closeOnClick={false}
-            onClose={handleClosePopup}
-            maxWidth="320px"
-            className="z-50 [&_.maplibregl-popup-content]:!overflow-visible [&_.maplibregl-popup-content]:!rounded-xl [&_.maplibregl-popup-content]:!p-0"
+      {mapError ? (
+        <div className="flex flex-col items-center justify-center w-full h-full bg-[#FAF5EE] px-6 py-10 text-center">
+          <div className="flex items-center justify-center w-16 h-16 rounded-full bg-red-100 mb-4">
+            <AlertTriangle className="text-[#C0392B]" size={28} />
+          </div>
+          <p className="text-[#1C0F08] font-display font-semibold text-lg mb-2">
+            Gagal memuat peta
+          </p>
+          <p className="text-[#6B4F3A] text-sm max-w-xs mb-6">
+            Gagal memuat peta. Silakan muat ulang halaman.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-5 py-2.5 rounded-lg bg-[#C0392B] text-white text-sm font-medium hover:bg-[#96231A] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C0392B] focus-visible:ring-offset-2"
           >
-            <div className="relative p-4 min-w-[260px]">
-              {/* Custom close button — large, positioned outside */}
-              <button
-                onClick={handleClosePopup}
-                className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-white border border-[#DDD0C0] shadow-md flex items-center justify-center hover:bg-[#C0392B] hover:text-white hover:border-[#C0392B] transition-colors z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C0392B]"
-                aria-label="Tutup popup"
-              >
-                <X size={16} />
-              </button>
-              <PopupCard item={popupItem} />
-            </div>
-          </Popup>
-        )}
-      </Map>
+            Muat Ulang
+          </button>
+        </div>
+      ) : (
+        <Map
+          ref={mapRef}
+          {...viewState}
+          onMove={handleMove}
+          mapStyle={`https://api.maptiler.com/maps/streets-v2-light/style.json?key=${MAPTILER_KEY}`}
+          maxBounds={[
+            MAP_BOUNDS.sw.lng,
+            MAP_BOUNDS.sw.lat,
+            MAP_BOUNDS.ne.lng,
+            MAP_BOUNDS.ne.lat,
+          ]}
+          maxZoom={MAX_ZOOM}
+          minZoom={MIN_ZOOM}
+          mapLib={import("maplibre-gl")}
+          style={{ width: "100%", height: "100%" }}
+          attributionControl={false}
+          onError={() => setMapError(true)}
+        >
+          <NavigationControl position="top-right" />
+
+          {/* ----------------------------------------------------------------- */}
+          {/* Cluster markers (zoom < CLUSTER_ZOOM) */}
+          {/* ----------------------------------------------------------------- */}
+          {isClustered &&
+            clusters?.map((cluster) => {
+              const color = buildClusterColor(cluster.dominantType);
+              const size = clusterSize(cluster.count);
+              const fontSize = clusterFontSize(cluster.count);
+
+              return (
+                <Marker
+                  key={cluster.id}
+                  latitude={cluster.lat}
+                  longitude={cluster.lng}
+                  anchor="center"
+                  onClick={(e) => {
+                    e.originalEvent.stopPropagation();
+                    handleClusterClick(cluster);
+                  }}
+                >
+                  <div
+                    className="relative flex items-center justify-center cursor-pointer transition-transform hover:scale-125"
+                    style={{ width: size, height: size }}
+                    title={`${cluster.count} objek budaya`}
+                  >
+                    {/* halo ring */}
+                    <div
+                      className="absolute inset-0 rounded-full"
+                      style={{
+                        backgroundColor: color,
+                        opacity: 0.2,
+                        transform: "scale(1.15)",
+                      }}
+                    />
+                    {/* main circle */}
+                    <div
+                      className="absolute inset-0 rounded-full flex items-center justify-center shadow-lg border-2 border-white"
+                      style={{ backgroundColor: color }}
+                    >
+                      <span
+                        className="font-bold text-white select-none leading-none"
+                        style={{ fontSize }}
+                      >
+                        {cluster.count}
+                      </span>
+                    </div>
+                  </div>
+                </Marker>
+              );
+            })}
+
+          {/* ----------------------------------------------------------------- */}
+          {/* Individual markers (zoom >= CLUSTER_ZOOM) */}
+          {/* ----------------------------------------------------------------- */}
+          {!isClustered &&
+            filteredItems.map((item) => {
+              const badge = getPinBadge(item);
+              return (
+                <Marker
+                  key={item.id}
+                  latitude={item.lat!}
+                  longitude={item.lng!}
+                  anchor="bottom"
+                  onClick={(e) => {
+                    e.originalEvent.stopPropagation();
+                    handleMarkerClick(item);
+                  }}
+                >
+                  <div
+                    className="cursor-pointer transition-transform hover:scale-125"
+                    title={item.name}
+                    dangerouslySetInnerHTML={{
+                      __html: buildPinSvg(
+                        item.type,
+                        badge.pinColor,
+                        badge.pinSize,
+                      ),
+                    }}
+                  />
+                </Marker>
+              );
+            })}
+
+          {/* Popup with large close button */}
+          {popupItem && popupItem.lat && popupItem.lng && (
+            <Popup
+              latitude={popupItem.lat}
+              longitude={popupItem.lng}
+              anchor="top"
+              offset={36}
+              closeButton={false}
+              closeOnClick={false}
+              onClose={handleClosePopup}
+              maxWidth="320px"
+              className="z-50 [&_.maplibregl-popup-content]:!overflow-visible [&_.maplibregl-popup-content]:!rounded-xl [&_.maplibregl-popup-content]:!p-0"
+            >
+              <div className="relative p-4 min-w-[260px]">
+                {/* Custom close button — large, positioned outside */}
+                <button
+                  onClick={handleClosePopup}
+                  className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-white border border-[#DDD0C0] shadow-md flex items-center justify-center hover:bg-[#C0392B] hover:text-white hover:border-[#C0392B] transition-colors z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C0392B]"
+                  aria-label="Tutup popup"
+                >
+                  <X size={16} />
+                </button>
+                <PopupCard item={popupItem} />
+              </div>
+            </Popup>
+          )}
+        </Map>
+      )}
 
       {/* Filter bar */}
       <MapFilterBar activeLayers={activeLayers} onToggle={toggleLayer} />
