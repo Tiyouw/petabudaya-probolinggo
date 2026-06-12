@@ -236,6 +236,15 @@ export default function CultureMap({
     selectItem(null);
   }, [selectItem]);
 
+  const handleResetView = useCallback(() => {
+    setPopupItem(null);
+    mapRef.current?.flyTo({
+      center: [113.45, -7.75],
+      zoom: DEFAULT_ZOOM,
+      duration: 1200,
+    });
+  }, []);
+
   const handleClusterClick = useCallback(
     (cluster: Cluster) => {
       const targetZoom = Math.min(currentZoom + 2, MAX_ZOOM);
@@ -476,6 +485,7 @@ export default function CultureMap({
         onToggle={toggleLayer}
         clusterEnabled={clusterEnabled}
         onClusterToggle={() => setClusterEnabled((value) => !value)}
+        onResetView={handleResetView}
       />
 
       {/* Info label */}

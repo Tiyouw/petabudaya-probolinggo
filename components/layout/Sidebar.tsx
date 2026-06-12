@@ -244,7 +244,7 @@ export default function Sidebar() {
       >
         <div
           ref={dragHandleRef}
-          className="flex items-center justify-center h-6 cursor-grab active:cursor-grabbing touch-none select-none border-b border-[#2A1A10] hover:bg-[#2A1A10] transition-colors"
+          className="flex items-center justify-center h-6 cursor-grab active:cursor-grabbing touch-none select-none border-b border-[#2A1A10] transition-colors"
           onPointerDown={handleDragStart}
           aria-label="Seret untuk memindahkan sidebar"
         >

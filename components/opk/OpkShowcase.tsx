@@ -103,7 +103,7 @@ function OpkSectionContent({ category }: { category: OPKCategory }) {
             Tablet/Desktop (md+): 2-column grid with vertical scroll.
           */}
           <div
-            className="flex gap-3 overflow-x-auto snap-x snap-mandatory py-1 md:grid md:grid-cols-2 md:gap-3 md:overflow-visible md:max-h-[400px] md:pr-2 md:snap-none [&::-webkit-scrollbar]:hidden"
+            className="flex gap-3 overflow-x-auto snap-x snap-mandatory py-1 md:grid md:grid-cols-2 md:gap-3 md:overflow-visible md:max-h-none md:pr-2 md:snap-none [&::-webkit-scrollbar]:hidden"
             style={{ scrollbarWidth: "none" }}
           >
             {category.items.map((item, i) => (
