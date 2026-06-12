@@ -107,7 +107,12 @@ export default function Sidebar() {
   const handleNav = useCallback(
     (id: string) => {
       if (id === "opk") {
+        const toggling = expandedId !== "opk";
         setExpandedId((prev) => (prev === "opk" ? null : "opk"));
+        if (toggling) {
+          const el = document.getElementById("opk");
+          if (el) el.scrollIntoView({ behavior: "smooth" });
+        }
       } else {
         setExpandedId(null);
         const el = document.getElementById(id);
@@ -117,14 +122,18 @@ export default function Sidebar() {
         }
       }
     },
-    []
+    [expandedId]
   );
 
   const handleOpkSub = useCallback((categoryId: string) => {
     setExpandedId(null);
-    document
-      .getElementById(`opk-${categoryId}`)
-      ?.scrollIntoView({ behavior: "smooth" });
+    const el = document.getElementById("opk");
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+    window.dispatchEvent(
+      new CustomEvent("petabudaya:select-opk-category", {
+        detail: { categoryId },
+      })
+    );
   }, []);
 
   const handleLogoClick = useCallback(() => {

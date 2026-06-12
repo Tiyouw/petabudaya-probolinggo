@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
 import { FileText, MessageCircle, Building2, Flame, Brain, Wrench, Palette, Languages, Gamepad2, Swords } from "lucide-react";
 import { opkCategories } from "@/data/opk";
@@ -26,6 +26,17 @@ export default function OpkShowcase() {
     setSelectedCategoryId(categoryId);
     setShowAll(false);
   };
+
+  // Listen for sidebar sub-category clicks
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const { categoryId } = (e as CustomEvent<{ categoryId: string }>).detail;
+      setSelectedCategoryId(categoryId);
+      setShowAll(false);
+    };
+    window.addEventListener("petabudaya:select-opk-category", handler);
+    return () => window.removeEventListener("petabudaya:select-opk-category", handler);
+  }, []);
 
   return (
     <section id="opk" className="relative bg-white py-20 md:py-28">
