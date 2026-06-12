@@ -8,8 +8,14 @@ export default function CulturalOutro() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
-  const scrollToTop = () => {
-    document.getElementById("hero")?.scrollIntoView({ behavior: "smooth" });
+  const handleBackToTop = () => {
+    const hero = document.getElementById("hero");
+    if (hero) {
+      hero.scrollIntoView({ behavior: "smooth" });
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent("petabudaya:replay-hero"));
+      }, 800);
+    }
   };
 
   return (
@@ -50,7 +56,7 @@ export default function CulturalOutro() {
         </motion.p>
 
         <motion.button
-          onClick={scrollToTop}
+          onClick={handleBackToTop}
           className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-[#C0392B] text-white font-medium text-base hover:bg-[#96231A] transition-colors shadow-lift lightsweep focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}

@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import {
   motion,
+  AnimatePresence,
   useScroll,
   useTransform,
   type Variants,
@@ -147,6 +148,13 @@ function AnimatedLetters({ text }: { text: string }) {
 
 export default function HeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
+  const [replayKey, setReplayKey] = useState(0);
+
+  useEffect(() => {
+    const handler = () => setReplayKey((k) => k + 1);
+    window.addEventListener("petabudaya:replay-hero", handler);
+    return () => window.removeEventListener("petabudaya:replay-hero", handler);
+  }, []);
 
   /* ---- 3. Map parallax — scroll-driven translateY ------------------------ */
   const { scrollYProgress } = useScroll({
@@ -216,10 +224,34 @@ export default function HeroSection() {
         />
       ))}
 
+      {/* Replay glow burst */}
+      <AnimatePresence>
+        {replayKey > 0 && (
+          <motion.div
+            key={`burst-${replayKey}`}
+            initial={{ opacity: 0, scale: 0.3 }}
+            animate={{ opacity: [0, 0.25, 0], scale: [0.3, 1.8, 2.2] }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.2, ease: "easeOut" }}
+            className="absolute inset-0 pointer-events-none"
+            aria-hidden="true"
+          >
+            <div
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full"
+              style={{
+                background:
+                  "radial-gradient(circle, rgba(212,168,67,0.3) 0%, rgba(192,57,43,0.15) 40%, transparent 70%)",
+              }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ---- Content ------------------------------------------------------- */}
       <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         {/* ── Logo — top center, fades in and scales up ── */}
         <motion.div
+          key={`logos-${replayKey}`}
           className="mb-8"
           variants={logoScale}
           initial="hidden"
@@ -251,6 +283,7 @@ export default function HeroSection() {
         </motion.div>
 
         <motion.h1
+          key={`title-${replayKey}`}
           className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-bold text-[#1C0F08] leading-tight mb-6"
           style={{ fontFamily: "var(--font-display)" }}
           variants={fadeUp(0.15)}
@@ -266,6 +299,7 @@ export default function HeroSection() {
         </motion.h1>
 
         <motion.p
+          key={`desc-${replayKey}`}
           className="text-base sm:text-lg text-[#6B4F3A] max-w-2xl mx-auto mb-10 leading-relaxed"
           variants={fadeUp(0.35)}
           initial="hidden"
@@ -278,6 +312,7 @@ export default function HeroSection() {
         </motion.p>
 
         <motion.div
+          key={`cta-${replayKey}`}
           className="flex flex-col sm:flex-row items-center justify-center gap-4"
           variants={fadeUp(0.55)}
           initial="hidden"

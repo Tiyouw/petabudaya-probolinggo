@@ -14,9 +14,6 @@ import {
 } from "lucide-react";
 import { opkCategories } from "@/data/opk";
 
-const SIDEBAR_COLLAPSED_WIDTH = 64;
-const SIDEBAR_EXPANDED_WIDTH = 236;
-
 const mainNav = [
   { id: "hero", label: "Beranda", icon: Home, href: "#hero" },
   { id: "peta", label: "Peta", icon: Map, href: "#peta" },
@@ -31,72 +28,28 @@ const mainNav = [
 ];
 
 // ─── Sidebar Logo Component ───────────────────────────────────────────────
-function SidebarLogo({ expanded }: { expanded: boolean }) {
-  const [hovered, setHovered] = useState(false);
-  const showText = expanded || hovered;
-
+function SidebarLogo({ onClick }: { onClick: () => void }) {
   return (
-    <div
-      className="flex flex-col items-center gap-0.5 pt-4 pb-3 border-b border-[#2A1A10] overflow-visible"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+    <button
+      onClick={onClick}
+      className="flex items-center justify-center py-3 px-3 border-b border-[#2A1A10] hover:bg-[#2A1A10] transition-all group/logo relative"
+      aria-label="Kembali ke Beranda"
     >
-      <div className="flex items-center gap-2.5 px-[14px] min-h-[44px] overflow-visible">
-        {/* Real Kabupaten Probolinggo logo */}
-        <div className="relative w-[42px] h-[42px] flex-shrink-0 group/logo">
-          <Image
-            src="/assets/logos/Logo_Kabupaten_Probolinggo_-_Seal_of_Probolinggo_Regency.svg.png"
-            alt="Logo Kabupaten Probolinggo"
-            width={42}
-            height={42}
-            className="w-full h-full object-contain drop-shadow-[0_2px_6px_rgba(212,168,67,0.35)] transition-all duration-300 group-hover/logo:drop-shadow-[0_2px_12px_rgba(212,168,67,0.55)]"
-            priority
-            unoptimized
-          />
-          {/* Subtle glow ring on hover */}
-          <div
-            className="absolute inset-0 rounded-full opacity-0 group-hover/logo:opacity-100 transition-opacity duration-300 pointer-events-none"
-            style={{
-              boxShadow: "0 0 16px 4px rgba(212,168,67,0.45)",
-            }}
-          />
-        </div>
-
-        {/* Brand name — reveals on logo hover or sidebar expansion */}
-        <motion.div
-          className="overflow-hidden whitespace-nowrap"
-          initial={false}
-          animate={{
-            opacity: showText ? 1 : 0,
-            width: showText ? "auto" : 0,
-            marginLeft: showText ? undefined : "-4px",
-          }}
-          transition={{ duration: 0.25, ease: "easeInOut" }}
-        >
-          <span
-            className="text-[#F2C86B] text-[13px] italic tracking-wide select-none"
-            style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
-          >
-            PetaBudaya Probolinggo
-          </span>
-        </motion.div>
+      <div className="relative w-9 h-9 flex-shrink-0 group-hover/logo:scale-110 transition-transform duration-300">
+        <Image
+          src="/assets/logos/Logo_Kabupaten_Probolinggo_-_Seal_of_Probolinggo_Regency.svg.png"
+          alt="Logo Kabupaten Probolinggo"
+          width={36}
+          height={36}
+          className="object-contain drop-shadow-[0_2px_6px_rgba(212,168,67,0.35)] transition-all duration-300 group-hover/logo:drop-shadow-[0_2px_12px_rgba(212,168,67,0.55)]"
+          priority
+          unoptimized
+        />
       </div>
-
-      {/* Subtitle — visible only when sidebar is fully expanded */}
-      <AnimatePresence>
-        {expanded && (
-          <motion.p
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="text-[8px] text-[#8B7A6A] font-medium tracking-[0.13em] uppercase whitespace-nowrap overflow-hidden leading-none mt-1"
-          >
-            Dinas Kebudayaan dan Pariwisata
-          </motion.p>
-        )}
-      </AnimatePresence>
-    </div>
+      <div className="absolute inset-2 rounded-full opacity-0 group-hover/logo:opacity-100 transition-opacity duration-300 pointer-events-none"
+        style={{ boxShadow: "0 0 14px 4px rgba(212,168,67,0.45)" }}
+      />
+    </button>
   );
 }
 
@@ -157,7 +110,11 @@ export default function Sidebar() {
         setExpandedId(expandedId === "opk" ? null : "opk");
       } else {
         setExpandedId(null);
-        document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: "smooth" });
+        if (id === "hero") {
+          window.dispatchEvent(new CustomEvent("petabudaya:replay-hero"));
+        }
       }
     },
     [expandedId]
@@ -168,6 +125,15 @@ export default function Sidebar() {
     document
       .getElementById(`opk-${categoryId}`)
       ?.scrollIntoView({ behavior: "smooth" });
+  }, []);
+
+  const handleLogoClick = useCallback(() => {
+    setExpandedId(null);
+    const hero = document.getElementById("hero");
+    if (hero) {
+      hero.scrollIntoView({ behavior: "smooth" });
+      window.dispatchEvent(new CustomEvent("petabudaya:replay-hero"));
+    }
   }, []);
 
   // ─── Vertical drag (desktop only) ─────────────────────────────────────
@@ -262,8 +228,6 @@ export default function Sidebar() {
   }
 
   // ─── Desktop sidebar (floating overlay, right edge) ──────────────────
-  const isExpanded = expandedId !== null;
-
   return (
     <aside
       ref={sidebarRef}
@@ -274,97 +238,87 @@ export default function Sidebar() {
       }}
     >
       <nav
-        className="bg-[#1C0F08] flex flex-col gap-0 rounded-2xl shadow-2xl border border-[#6B4F3A] overflow-hidden"
-        style={{
-          width: isExpanded
-            ? `${SIDEBAR_EXPANDED_WIDTH}px`
-            : `${SIDEBAR_COLLAPSED_WIDTH}px`,
-          transition: "width 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
-        }}
+        className="bg-[#1C0F08] flex flex-col gap-0 rounded-2xl shadow-2xl border border-[#6B4F3A] overflow-visible"
+        style={{ width: "56px" }}
         aria-label="Navigasi utama"
       >
-        {/* Drag handle — only this strip triggers vertical drag */}
         <div
           ref={dragHandleRef}
-          className="flex items-center justify-center h-7 cursor-grab active:cursor-grabbing touch-none select-none border-b border-[#2A1A10] hover:bg-[#2A1A10] transition-colors"
+          className="flex items-center justify-center h-6 cursor-grab active:cursor-grabbing touch-none select-none border-b border-[#2A1A10] hover:bg-[#2A1A10] transition-colors"
           onPointerDown={handleDragStart}
-          title="Seret untuk memindahkan sidebar"
           aria-label="Seret untuk memindahkan sidebar"
         >
-          <GripHorizontal size={14} className="text-[#8B7A6A]" />
+          <GripHorizontal size={12} className="text-[#6B4F3A]" />
         </div>
 
-        {/* Logo area */}
-        <SidebarLogo expanded={isExpanded} />
+        <SidebarLogo onClick={handleLogoClick} />
 
-        {/* Nav items */}
         {mainNav.map((item) => (
-          <div key={item.id}>
+          <div key={item.id} className="relative group/item">
             <button
               onClick={() => handleNav(item.id)}
-              className={`w-full flex items-center gap-3 px-[18px] py-3.5 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C0392B] lightsweep min-h-[48px] ${
+              className={`w-full flex items-center justify-center py-3.5 text-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C0392B] lightsweep min-h-[48px] ${
                 activeId === item.id
-                  ? "text-[#C0392B] border-r-[3px] border-r-[#C0392B] bg-[#C0392B]/10"
+                  ? "text-[#C0392B] bg-[#C0392B]/10"
                   : "text-[#DDD0C0] hover:text-white hover:bg-[#2A1A10]"
               }`}
               aria-label={item.label}
               aria-current={activeId === item.id ? "page" : undefined}
             >
               <item.icon
-                size={24}
-                strokeWidth={activeId === item.id ? 2.5 : 2}
+                size={22}
+                strokeWidth={activeId === item.id ? 2.8 : 2.35}
+                className="shrink-0"
               />
-              <motion.span
-                className="text-sm font-medium whitespace-nowrap select-none"
-                animate={{ opacity: isExpanded ? 1 : 0 }}
-                transition={{ duration: 0.15 }}
-              >
-                {item.label}
-              </motion.span>
-              {item.id === "opk" && (
-                <motion.span
-                  className="ml-auto"
-                  animate={{ rotate: expandedId === "opk" ? 90 : 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <ChevronRight size={16} />
-                </motion.span>
-              )}
             </button>
-
-            {/* OPK sub-panel */}
-            <AnimatePresence>
-              {expandedId === "opk" && item.id === "opk" && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="overflow-hidden border-t border-[#2A1A10]"
-                >
-                  <div className="py-2 space-y-1">
-                    {opkCategories.map((cat) => (
-                      <button
-                        key={cat.id}
-                        onClick={() => handleOpkSub(cat.id)}
-                        className="w-full flex items-center gap-2.5 pl-[52px] pr-4 py-2 text-xs text-[#DDD0C0] hover:text-white hover:bg-[#2A1A10] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C0392B]"
-                      >
-                        <span
-                          className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                          style={{ backgroundColor: cat.accentColor }}
-                        />
-                        <span className="text-left leading-tight whitespace-nowrap">
-                          {cat.name}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            <div className="absolute right-[calc(100%+8px)] top-1/2 -translate-y-1/2 hidden group-hover/item:block z-[60]">
+              <div className="bg-[#1C0F08] text-white text-xs font-medium whitespace-nowrap px-3 py-1.5 rounded-lg shadow-lg border border-[#6B4F3A]">
+                {item.label}
+                {item.id === "opk" && expandedId === "opk" ? " (Tutup)" : ""}
+              </div>
+            </div>
+            {item.id === "opk" && (
+              <div className="flex justify-center pb-1">
+                <ChevronRight
+                  size={10}
+                  className={`text-[#8B7A6A] transition-transform duration-300 ${
+                    expandedId === "opk" ? "rotate-90" : ""
+                  }`}
+                />
+              </div>
+            )}
           </div>
         ))}
       </nav>
+
+      <AnimatePresence>
+        {expandedId === "opk" && (
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className="absolute right-[calc(100%+12px)] top-0 z-[55] bg-[#1C0F08] rounded-2xl border border-[#6B4F3A] shadow-2xl py-3 px-3 min-w-[180px]"
+          >
+            <p className="text-[#F2C86B] text-[10px] font-semibold tracking-wider uppercase px-2 pb-2 border-b border-[#2A1A10] mb-2">
+              Objek Pemajuan Kebudayaan
+            </p>
+            {opkCategories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => handleOpkSub(cat.id)}
+                className="w-full flex items-center gap-2.5 px-2 py-2 text-xs text-[#DDD0C0] hover:text-white hover:bg-[#2A1A10] rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C0392B]"
+              >
+                <span
+                  className="w-2 h-2 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: cat.accentColor }}
+                />
+                <span className="text-left leading-tight">{cat.name}</span>
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </aside>
   );
 }
