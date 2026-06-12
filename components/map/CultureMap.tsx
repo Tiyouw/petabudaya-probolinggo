@@ -317,7 +317,6 @@ export default function CultureMap({
           ]}
           maxZoom={MAX_ZOOM}
           minZoom={MIN_ZOOM}
-          mapLib={import("maplibre-gl")}
           style={{ width: "100%", height: "100%" }}
           attributionControl={false}
           onError={() => setMapError(true)}

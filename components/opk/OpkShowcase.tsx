@@ -42,7 +42,7 @@ function OpkSectionContent({ category }: { category: OPKCategory }) {
   return (
     <div
       id={`opk-${category.id}`}
-      className="snap-section flex items-center relative overflow-hidden"
+      className="snap-section flex items-center relative overflow-visible"
     >
       {/* Category accent bar */}
       <div
