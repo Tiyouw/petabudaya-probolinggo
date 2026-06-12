@@ -1,12 +1,33 @@
 {
   "name": "petabudaya-probolinggo",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
+  "description": "Peta interaktif cagar budaya, WBTB, dan objek pemajuan kebudayaan Kabupaten Probolinggo — etalase digital resmi Dinas Kebudayaan dan Pariwisata",
+  "keywords": [
+    "probolinggo",
+    "cagar-budaya",
+    "wbtb",
+    "warisan-budaya",
+    "peta-budaya",
+    "nextjs",
+    "typescript",
+    "maplibre",
+    "tailwindcss",
+    "cultural-heritage"
+  ],
+  "homepage": "https://petabudaya-probolinggo.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Tiyouw/petabudaya-probolinggo.git"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --config lib/__tests__/vitest.config.ts",
+    "test:watch": "vitest --config lib/__tests__/vitest.config.ts"
   },
   "dependencies": {
     "framer-motion": "^12.40.0",
