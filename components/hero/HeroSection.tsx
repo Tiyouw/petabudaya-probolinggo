@@ -7,8 +7,8 @@ import {
   useTransform,
   type Variants,
 } from "framer-motion";
+import Image from "next/image";
 import Button from "@/components/ui/Button";
-import Logo from "@/components/ui/Logo";
 
 const fadeUp = (delay: number): Variants => ({
   hidden: { opacity: 0, y: 30 },
@@ -225,10 +225,29 @@ export default function HeroSection() {
           initial="hidden"
           animate="visible"
         >
-          <Logo
-            size={140}
-            className="mx-auto drop-shadow-[0_4px_12px_rgba(0,0,0,0.15)]"
-          />
+          <div className="mx-auto flex w-fit items-center justify-center gap-5 rounded-[2rem] border border-white/70 bg-white/70 px-6 py-4 shadow-[0_18px_50px_rgba(28,15,8,0.12)] backdrop-blur-md">
+            <div className="relative h-20 w-20 sm:h-24 sm:w-24">
+              <Image
+                src="/assets/logos/Logo_Kabupaten_Probolinggo_-_Seal_of_Probolinggo_Regency.svg.png"
+                alt="Logo Kabupaten Probolinggo"
+                fill
+                sizes="96px"
+                className="object-contain drop-shadow-[0_5px_12px_rgba(0,0,0,0.18)]"
+                priority
+              />
+            </div>
+            <div className="h-16 w-px bg-[#DDD0C0]" aria-hidden="true" />
+            <div className="relative h-20 w-20 sm:h-24 sm:w-24">
+              <Image
+                src="/assets/logos/Coat_of_arms_of_the_City_of_Probolinggo.svg"
+                alt="Lambang Kota Probolinggo"
+                fill
+                sizes="96px"
+                className="object-contain drop-shadow-[0_5px_12px_rgba(0,0,0,0.18)]"
+                priority
+              />
+            </div>
+          </div>
         </motion.div>
 
         <motion.h1

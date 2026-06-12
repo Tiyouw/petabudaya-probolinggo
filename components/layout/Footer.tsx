@@ -1,4 +1,4 @@
-import Logo from "@/components/ui/Logo";
+import Image from "next/image";
 
 const footerLinks = [
   { href: "#peta", label: "Peta Sebaran Budaya" },
@@ -20,7 +20,26 @@ export default function Footer() {
           <div>
             {/* Logo + brand name row */}
             <div className="flex items-center gap-4 mb-3">
-              <Logo size={72} className="shrink-0 opacity-90" />
+              <div className="flex items-center gap-3">
+                <div className="relative h-12 w-12">
+                  <Image
+                    src="/assets/logos/Logo_Kabupaten_Probolinggo_-_Seal_of_Probolinggo_Regency.svg.png"
+                    alt="Logo Kabupaten Probolinggo"
+                    fill
+                    sizes="48px"
+                    className="object-contain"
+                  />
+                </div>
+                <div className="relative h-12 w-12">
+                  <Image
+                    src="/assets/logos/Coat_of_arms_of_the_City_of_Probolinggo.svg"
+                    alt="Lambang Kota Probolinggo"
+                    fill
+                    sizes="48px"
+                    className="object-contain"
+                  />
+                </div>
+              </div>
               <div>
                 <h4
                   className="text-xl font-display font-bold"

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useSyncExternalStore, useRef } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Home,
@@ -9,8 +10,12 @@ import {
   ScrollText,
   Layers,
   ChevronRight,
+  GripHorizontal,
 } from "lucide-react";
 import { opkCategories } from "@/data/opk";
+
+const SIDEBAR_COLLAPSED_WIDTH = 64;
+const SIDEBAR_EXPANDED_WIDTH = 236;
 
 const mainNav = [
   { id: "hero", label: "Beranda", icon: Home, href: "#hero" },
@@ -37,52 +42,20 @@ function SidebarLogo({ expanded }: { expanded: boolean }) {
       onMouseLeave={() => setHovered(false)}
     >
       <div className="flex items-center gap-2.5 px-[14px] min-h-[44px] overflow-visible">
-        {/* Logo mark — golden circle with "PB" monogram */}
-        <div className="relative w-[40px] h-[40px] flex-shrink-0 group/logo">
-          <svg
-            width="40"
-            height="40"
-            viewBox="0 0 40 40"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-full h-full drop-shadow-[0_2px_6px_rgba(212,168,67,0.35)] transition-all duration-300 group-hover/logo:drop-shadow-[0_2px_12px_rgba(212,168,67,0.55)]"
-          >
-            {/* Outer ring */}
-            <circle
-              cx="20"
-              cy="20"
-              r="19"
-              fill="#D4A843"
-              stroke="#F2C86B"
-              strokeWidth="1.5"
-            />
-            {/* Inner decorative ring */}
-            <circle
-              cx="20"
-              cy="20"
-              r="16"
-              fill="none"
-              stroke="#1C0F08"
-              strokeWidth="0.5"
-              strokeOpacity="0.3"
-              strokeDasharray="2 2"
-            />
-            {/* "PB" monogram */}
-            <text
-              x="20"
-              y="25"
-              textAnchor="middle"
-              fontFamily="'Playfair Display', Georgia, serif"
-              fontStyle="italic"
-              fontSize="15"
-              fontWeight="700"
-              fill="#1C0F08"
-            >
-              PB
-            </text>
-          </svg>
+        {/* Real Kabupaten Probolinggo logo */}
+        <div className="relative w-[42px] h-[42px] flex-shrink-0 group/logo">
+          <Image
+            src="/assets/logos/Logo_Kabupaten_Probolinggo_-_Seal_of_Probolinggo_Regency.svg.png"
+            alt="Logo Kabupaten Probolinggo"
+            width={42}
+            height={42}
+            className="w-full h-full object-contain drop-shadow-[0_2px_6px_rgba(212,168,67,0.35)] transition-all duration-300 group-hover/logo:drop-shadow-[0_2px_12px_rgba(212,168,67,0.55)]"
+            priority
+            unoptimized
+          />
           {/* Subtle glow ring on hover */}
-          <div className="absolute inset-0 rounded-full opacity-0 group-hover/logo:opacity-100 transition-opacity duration-300 pointer-events-none"
+          <div
+            className="absolute inset-0 rounded-full opacity-0 group-hover/logo:opacity-100 transition-opacity duration-300 pointer-events-none"
             style={{
               boxShadow: "0 0 16px 4px rgba(212,168,67,0.45)",
             }}
@@ -131,15 +104,31 @@ function SidebarLogo({ expanded }: { expanded: boolean }) {
 export default function Sidebar() {
   const [activeId, setActiveId] = useState("hero");
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
+  const [sidebarTop, setSidebarTop] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragHandleRef = useRef<HTMLDivElement>(null);
+  const sidebarRef = useRef<HTMLDivElement>(null);
 
+  // Hydration-safe mobile detection via useSyncExternalStore — avoids
+  // synchronous setState in effect body which triggers react-hooks/set-state-in-effect.
+  const isMobile = useSyncExternalStore(
+    (notify) => {
+      const mq = window.matchMedia("(max-width: 768px)");
+      mq.addEventListener("change", notify);
+      return () => mq.removeEventListener("change", notify);
+    },
+    () => window.matchMedia("(max-width: 768px)").matches,
+    () => false
+  );
+
+  // Center sidebar vertically on first render (desktop only)
   useEffect(() => {
-    const mq = window.matchMedia("(max-width: 768px)");
-    setIsMobile(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
+    if (!isMobile && sidebarRef.current) {
+      const sidebarHeight = sidebarRef.current.offsetHeight;
+      const viewportHeight = window.innerHeight;
+      setSidebarTop(Math.max(0, (viewportHeight - sidebarHeight) / 2));
+    }
+  }, [isMobile]);
 
   // Track active section via IntersectionObserver
   useEffect(() => {
@@ -180,6 +169,40 @@ export default function Sidebar() {
       .getElementById(`opk-${categoryId}`)
       ?.scrollIntoView({ behavior: "smooth" });
   }, []);
+
+  // ─── Vertical drag (desktop only) ─────────────────────────────────────
+  // Pointer events only on the handle strip — buttons keep normal click behavior.
+  const handleDragStart = useCallback(
+    (e: React.PointerEvent) => {
+      e.preventDefault();
+      setIsDragging(true);
+      const startY = e.clientY;
+      const startTop = sidebarTop;
+      const el = dragHandleRef.current;
+      if (el) el.setPointerCapture(e.pointerId);
+
+      const onMove = (ev: PointerEvent) => {
+        const delta = ev.clientY - startY;
+        const newTop = startTop + delta;
+        if (sidebarRef.current) {
+          const sidebarHeight = sidebarRef.current.offsetHeight;
+          const maxTop = Math.max(0, window.innerHeight - sidebarHeight);
+          setSidebarTop(Math.max(0, Math.min(newTop, maxTop)));
+        }
+      };
+
+      const onUp = () => {
+        setIsDragging(false);
+        if (el) el.releasePointerCapture(e.pointerId);
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+      };
+
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+    },
+    [sidebarTop]
+  );
 
   // ─── Mobile bottom bar ───────────────────────────────────────────────
   if (isMobile) {
@@ -238,19 +261,39 @@ export default function Sidebar() {
     );
   }
 
-  // ─── Desktop sidebar (right edge) ────────────────────────────────────
+  // ─── Desktop sidebar (floating overlay, right edge) ──────────────────
   const isExpanded = expandedId !== null;
 
   return (
-    <aside className="fixed right-0 top-0 bottom-0 z-50 flex items-center">
+    <aside
+      ref={sidebarRef}
+      className="fixed right-3 z-50 hidden md:flex items-start"
+      style={{
+        top: `${sidebarTop}px`,
+        transition: isDragging ? "none" : "top 0.2s ease-out",
+      }}
+    >
       <nav
-        className="bg-[#1C0F08] flex flex-col gap-0 rounded-l-2xl shadow-2xl border-l border-[#6B4F3A]"
+        className="bg-[#1C0F08] flex flex-col gap-0 rounded-2xl shadow-2xl border border-[#6B4F3A] overflow-hidden"
         style={{
-          width: isExpanded ? "236px" : "60px",
+          width: isExpanded
+            ? `${SIDEBAR_EXPANDED_WIDTH}px`
+            : `${SIDEBAR_COLLAPSED_WIDTH}px`,
           transition: "width 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
         }}
         aria-label="Navigasi utama"
       >
+        {/* Drag handle — only this strip triggers vertical drag */}
+        <div
+          ref={dragHandleRef}
+          className="flex items-center justify-center h-7 cursor-grab active:cursor-grabbing touch-none select-none border-b border-[#2A1A10] hover:bg-[#2A1A10] transition-colors"
+          onPointerDown={handleDragStart}
+          title="Seret untuk memindahkan sidebar"
+          aria-label="Seret untuk memindahkan sidebar"
+        >
+          <GripHorizontal size={14} className="text-[#8B7A6A]" />
+        </div>
+
         {/* Logo area */}
         <SidebarLogo expanded={isExpanded} />
 
@@ -259,20 +302,20 @@ export default function Sidebar() {
           <div key={item.id}>
             <button
               onClick={() => handleNav(item.id)}
-              className={`w-full flex items-center gap-3 px-[18px] py-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C0392B] lightsweep ${
+              className={`w-full flex items-center gap-3 px-[18px] py-3.5 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C0392B] lightsweep min-h-[48px] ${
                 activeId === item.id
                   ? "text-[#C0392B] border-r-[3px] border-r-[#C0392B] bg-[#C0392B]/10"
-                  : "text-[#C4B5A5] hover:text-[#DDD0C0] hover:bg-[#2A1A10]"
+                  : "text-[#DDD0C0] hover:text-white hover:bg-[#2A1A10]"
               }`}
               aria-label={item.label}
               aria-current={activeId === item.id ? "page" : undefined}
             >
               <item.icon
-                size={22}
-                strokeWidth={activeId === item.id ? 2.5 : 1.5}
+                size={24}
+                strokeWidth={activeId === item.id ? 2.5 : 2}
               />
               <motion.span
-                className="text-sm font-medium whitespace-nowrap"
+                className="text-sm font-medium whitespace-nowrap select-none"
                 animate={{ opacity: isExpanded ? 1 : 0 }}
                 transition={{ duration: 0.15 }}
               >
@@ -284,7 +327,7 @@ export default function Sidebar() {
                   animate={{ rotate: expandedId === "opk" ? 90 : 0 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <ChevronRight size={14} />
+                  <ChevronRight size={16} />
                 </motion.span>
               )}
             </button>

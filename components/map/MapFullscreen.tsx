@@ -14,7 +14,7 @@ export default function MapFullscreen() {
         <CultureMap />
         <button
           onClick={() => setIsFullscreen(true)}
-          className="absolute top-3 right-3 z-10 p-2 rounded-lg bg-white/90 backdrop-blur-sm border border-[#DDD0C0] shadow-card hover:bg-[#F0E6D8] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C0392B]"
+          className="absolute top-3 right-3 z-20 p-2 rounded-lg bg-white/90 backdrop-blur-sm border border-[#DDD0C0] shadow-card hover:bg-[#F0E6D8] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C0392B]"
           aria-label="Buka peta layar penuh"
         >
           <Maximize2 size={18} className="text-[#6B4F3A]" />
@@ -28,7 +28,7 @@ export default function MapFullscreen() {
             <CultureMap isFullscreen />
             <button
               onClick={() => setIsFullscreen(false)}
-              className="absolute top-3 right-3 z-10 p-2 rounded-lg bg-white/90 backdrop-blur-sm border border-[#DDD0C0] shadow-card hover:bg-[#F0E6D8] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C0392B]"
+              className="absolute top-3 right-3 z-20 p-2 rounded-lg bg-white/90 backdrop-blur-sm border border-[#DDD0C0] shadow-card hover:bg-[#F0E6D8] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C0392B]"
               aria-label="Tutup peta layar penuh"
             >
               <Minimize2 size={18} className="text-[#6B4F3A]" />

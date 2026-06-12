@@ -1,29 +1,13 @@
 "use client";
 
-import { useRef, useCallback } from "react";
+import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { FileText, MessageCircle, Building2, Flame, Brain, Wrench, Palette, Languages, Gamepad2, Swords } from "lucide-react";
 import { opkCategories } from "@/data/opk";
 import { OPKCategory } from "@/data/types";
-import { useScrollSpy } from "@/hooks/useScrollSpy";
-import ScrollProgressNav from "@/components/scroll/ScrollProgressNav";
-
-const opkSectionIds = opkCategories.map((c) => `opk-${c.id}`);
 
 export default function OpkShowcase() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { activeIndex, scrollTo } = useScrollSpy({
-    sectionIds: opkSectionIds,
-    offset: 0,
-  });
-
-  const handleScrollTo = useCallback(
-    (index: number) => {
-      scrollTo(index);
-    },
-    [scrollTo]
-  );
-
   return (
     <section id="opk" className="relative bg-white">
       {/* Header */}
@@ -47,13 +31,6 @@ export default function OpkShowcase() {
           <OpkSectionContent key={category.id} category={category} />
         ))}
       </div>
-
-      {/* Progress nav */}
-      <ScrollProgressNav
-        categories={opkCategories}
-        activeIndex={activeIndex}
-        onNavigate={handleScrollTo}
-      />
     </section>
   );
 }

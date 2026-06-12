@@ -52,53 +52,37 @@ const MAPTILER_KEY = "GuKF8sEbZEmRlalTzWEl";
  *  at (12, 10) – the same centre as the filled circle. */
 function getPinIcon(type: string): string {
   switch (type) {
-    /* ---------- Cagar Budaya – simple building (rectangle + triangle roof) ---------- */
     case "cagar-budaya":
       return (
-        // body
-        `<rect x="5.5" y="4" width="13" height="10" rx="1" fill="none" stroke="white" stroke-width="1.5"/>` +
-        // roof
-        `<polygon points="5.5,4 12,0.5 18.5,4" fill="none" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>` +
-        // door
-        `<rect x="9.5" y="8" width="5" height="6" rx="0.5" fill="none" stroke="white" stroke-width="1.5"/>`
+        `<path d="M7.4 10.1h9.2v5.6H7.4z" fill="none" stroke="white" stroke-width="1.8" stroke-linejoin="round"/>` +
+        `<path d="M6.4 10.1 12 6.5l5.6 3.6" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>` +
+        `<path d="M10.4 15.7v-3h3.2v3" fill="none" stroke="white" stroke-width="1.6" stroke-linejoin="round"/>`
       );
-
-    /* ---------- ODCB – question mark ---------- */
     case "odcb":
       return (
-        // curved top + descending stem
-        `<path d="M9 4 C13 2.5 17 3.5 17 6.5 C17 9 14 9 12 11.5 L12 13.5" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"/>` +
-        // dot
-        `<circle cx="12" cy="16" r="1.2" fill="white"/>`
+        `<path d="M8.2 8.8c.8-1.5 2.2-2.3 4-2.1 2 .2 3.4 1.5 3.4 3.2 0 1.6-1 2.4-2.4 3.2-.9.5-1.2.9-1.2 1.8" fill="none" stroke="white" stroke-width="1.9" stroke-linecap="round"/>` +
+        `<circle cx="12" cy="17.2" r="1.25" fill="white"/>`
       );
-
-    /* ---------- WBTB – 5‑point star ---------- */
     case "wbtb":
-      return (
-        `<polygon points="12,1 13.8,6.5 19.6,6.5 14.9,10 16.7,15.5 12,12 7.3,15.5 9.1,10 4.4,6.5 10.2,6.5" fill="none" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>`
-      );
-
+      return `<path d="m12 6.6 1.25 3.15 3.35.25-2.58 2.13.8 3.27L12 13.62 9.18 15.4l.8-3.27L7.4 10l3.35-.25L12 6.6Z" fill="none" stroke="white" stroke-width="1.9" stroke-linejoin="round"/>`;
     default:
       return getPinIcon("odcb");
   }
 }
 
-/** Build a complete pin SVG string ready for dangerouslySetInnerHTML /
- *  MapLibre marker HTML.  The returned string is a single <svg> element with
- *  no nested SVGs. */
 function buildPinSvg(type: string, color: string, size: number): string {
   const icon = getPinIcon(type);
   return `
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="${size}"
-      height="${size + 8}"
-      viewBox="0 0 24 32"
-    >
-      <circle cx="12" cy="10" r="9" fill="${color}" opacity="0.25" />
-      <circle cx="12" cy="10" r="7" fill="${color}" stroke="white" stroke-width="2" />
-      ${icon}
-      <polygon points="12,28 7,18 17,18" fill="${color}" />
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size + 10}" viewBox="0 0 24 34" aria-hidden="true">
+      <filter id="pinShadow" x="-20%" y="-20%" width="140%" height="150%">
+        <feDropShadow dx="0" dy="2" stdDeviation="1.6" flood-color="#1C0F08" flood-opacity="0.25" />
+      </filter>
+      <g filter="url(#pinShadow)">
+        <circle cx="12" cy="12" r="10.2" fill="${color}" opacity="0.22" />
+        <path d="M12 32 6.9 21.4h10.2L12 32Z" fill="${color}" stroke="white" stroke-width="1.2" stroke-linejoin="round"/>
+        <circle cx="12" cy="12" r="9" fill="${color}" stroke="white" stroke-width="2.2" />
+        ${icon}
+      </g>
     </svg>
   `;
 }
@@ -168,6 +152,7 @@ export default function CultureMap({
     });
   const [popupItem, setPopupItem] = useState<CulturalItem | null>(null);
   const [mapError, setMapError] = useState(false);
+  const [clusterEnabled, setClusterEnabled] = useState(false);
 
   const [viewState, setViewState] = useState<Partial<ViewState>>({
     latitude: -7.75,
@@ -186,7 +171,7 @@ export default function CultureMap({
   }, [activeLayers]);
 
   const currentZoom = viewState.zoom ?? DEFAULT_ZOOM;
-  const isClustered = currentZoom < CLUSTER_ZOOM;
+  const isClustered = clusterEnabled && currentZoom < CLUSTER_ZOOM;
 
   // -------------------------------------------------------------------------
   // Grid-based clusters (zoom < CLUSTER_ZOOM)
@@ -294,7 +279,16 @@ export default function CultureMap({
         source: "probolinggo-boundary",
         paint: {
           "fill-color": "#C0392B",
-          "fill-opacity": 0.06,
+          "fill-opacity": 0.08,
+        },
+      });
+      map.addLayer({
+        id: "probolinggo-fill-soft",
+        type: "fill",
+        source: "probolinggo-boundary",
+        paint: {
+          "fill-color": "#D4A843",
+          "fill-opacity": 0.025,
         },
       });
       map.addLayer({
@@ -303,9 +297,9 @@ export default function CultureMap({
         source: "probolinggo-boundary",
         paint: {
           "line-color": "#C0392B",
-          "line-width": 2.5,
-          "line-opacity": 0.5,
-          "line-dasharray": [4, 2],
+          "line-width": 3,
+          "line-opacity": 0.78,
+          "line-dasharray": [3, 1.5],
         },
       });
     };
@@ -362,7 +356,7 @@ export default function CultureMap({
           attributionControl={false}
           onError={() => setMapError(true)}
         >
-          <NavigationControl position="top-right" />
+          <NavigationControl position="top-right" style={{ marginTop: 56 }} />
 
           {/* ----------------------------------------------------------------- */}
           {/* Cluster markers (zoom < CLUSTER_ZOOM) */}
@@ -477,7 +471,12 @@ export default function CultureMap({
       )}
 
       {/* Filter bar */}
-      <MapFilterBar activeLayers={activeLayers} onToggle={toggleLayer} />
+      <MapFilterBar
+        activeLayers={activeLayers}
+        onToggle={toggleLayer}
+        clusterEnabled={clusterEnabled}
+        onClusterToggle={() => setClusterEnabled((value) => !value)}
+      />
 
       {/* Info label */}
       <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-card text-xs text-[#6B4F3A]">
