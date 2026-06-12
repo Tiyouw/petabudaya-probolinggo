@@ -1,5 +1,7 @@
 import Image from "next/image";
 
+const CURRENT_YEAR = 2026;
+
 const footerLinks = [
   { href: "#peta", label: "Peta Sebaran Budaya" },
   { href: "#cagar-budaya", label: "Cagar Budaya" },
@@ -93,7 +95,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-[#6B4F3A] mt-10 pt-6 text-center text-xs text-[#6B4F3A]">
-          &copy; {new Date().getFullYear()} Dinas Kebudayaan dan Pariwisata
+          &copy; {CURRENT_YEAR} Dinas Kebudayaan dan Pariwisata
           Kabupaten Probolinggo. Seluruh konten dalam proses validasi.
         </div>
       </div>

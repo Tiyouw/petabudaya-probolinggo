@@ -10,5 +10,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly" as const,
       priority: 1,
     },
+    // Note: Section-based content (#peta, #cagar-budaya, #wbtb, #opk)
+    // uses hash-based navigation on the single-page app and cannot be
+    // indexed as separate sitemap entries by search engines.
+    // Future: When detail pages are implemented, add each item's URL here.
   ];
 }

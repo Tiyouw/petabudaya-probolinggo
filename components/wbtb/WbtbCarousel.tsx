@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useSyncExternalStore } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { CulturalItem } from "@/data/types";
 import Badge from "@/components/ui/Badge";
@@ -294,18 +294,19 @@ function getWbtbVisual(itemId: string) {
 export default function WbtbCarousel({ items }: WbtbCarouselProps) {
   const [current, setCurrent] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const prefersReducedMotion = useSyncExternalStore(
+    (notify) => {
+      const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+      mq.addEventListener("change", notify);
+      return () => mq.removeEventListener("change", notify);
+    },
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    () => true // SSR fallback: assume reduced motion (safer default)
+  );
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const max = items.length;
 
-  // Detect reduced motion preference
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setPrefersReducedMotion(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
+  // Auto-play (respects reduced motion)
 
   const goNext = useCallback(() => {
     setCurrent((prev) => (prev + 1) % max);
@@ -315,7 +316,7 @@ export default function WbtbCarousel({ items }: WbtbCarouselProps) {
     setCurrent((prev) => (prev - 1 + max) % max);
   }, [max]);
 
-  // Auto-play (respects reduced motion)
+  // Auto-play interval
   useEffect(() => {
     if (isPaused || max <= 1 || prefersReducedMotion) {
       if (intervalRef.current) clearInterval(intervalRef.current);

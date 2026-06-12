@@ -28,8 +28,12 @@ export function useScrollSpy({ sectionIds, offset = 0 }: UseScrollSpyOptions) {
 
   useEffect(() => {
     window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
+    // Defer initial scroll detection to avoid synchronous setState in effect body
+    const raf = requestAnimationFrame(handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      cancelAnimationFrame(raf);
+    };
   }, [handleScroll]);
 
   const scrollTo = useCallback(

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import PinSvg from "./PinSvg";
 import Map, {
   MapRef,
   Marker,
@@ -28,64 +29,9 @@ import MapFilterBar from "./MapFilterBar";
 import { useMapFilter } from "@/hooks/useMapFilter";
 import boundaryData from "@/data/probolinggo-boundary.json";
 
-const MAPTILER_KEY = "GuKF8sEbZEmRlalTzWEl";
+const MAPTILER_KEY = process.env.NEXT_PUBLIC_MAPTILER_KEY || "";
 
-// ---------------------------------------------------------------------------
-// Pin SVG generation
-// ---------------------------------------------------------------------------
-// Every pin uses a fixed 24×32 viewBox. The outer <svg> width/height scales
-// to the target pinSize so the same artwork works at all three sizes.
-//
-// Structure (top → bottom):
-//   1. Glow / halo circle           cx=12  cy=10  r=9   opacity 0.25
-//   2. Main filled circle + border  cx=12  cy=10  r=7   stroke-width 2
-//   3. White icon centered at (12,10) inside the circle  (~60 % of r=7)
-//   4. Triangle tail pointing down  12,28  7,18  17,18
-//
-// Icons use simple geometric paths – no nested <svg>, no tiny unreadable
-// rect/line combos.  Every path element explicitly sets fill / stroke so
-// nothing leaks from a parent attribute.
-// ---------------------------------------------------------------------------
-
-/** Return the white icon body (one or more SVG elements) for a site type.
- *  All coordinates are relative to the 24×32 viewBox; the icon is centred
- *  at (12, 10) – the same centre as the filled circle. */
-function getPinIcon(type: string): string {
-  switch (type) {
-    case "cagar-budaya":
-      return (
-        `<path d="M7.4 10.1h9.2v5.6H7.4z" fill="none" stroke="white" stroke-width="1.8" stroke-linejoin="round"/>` +
-        `<path d="M6.4 10.1 12 6.5l5.6 3.6" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>` +
-        `<path d="M10.4 15.7v-3h3.2v3" fill="none" stroke="white" stroke-width="1.6" stroke-linejoin="round"/>`
-      );
-    case "odcb":
-      return (
-        `<path d="M8.2 8.8c.8-1.5 2.2-2.3 4-2.1 2 .2 3.4 1.5 3.4 3.2 0 1.6-1 2.4-2.4 3.2-.9.5-1.2.9-1.2 1.8" fill="none" stroke="white" stroke-width="1.9" stroke-linecap="round"/>` +
-        `<circle cx="12" cy="17.2" r="1.25" fill="white"/>`
-      );
-    case "wbtb":
-      return `<path d="m12 6.6 1.25 3.15 3.35.25-2.58 2.13.8 3.27L12 13.62 9.18 15.4l.8-3.27L7.4 10l3.35-.25L12 6.6Z" fill="none" stroke="white" stroke-width="1.9" stroke-linejoin="round"/>`;
-    default:
-      return getPinIcon("odcb");
-  }
-}
-
-function buildPinSvg(type: string, color: string, size: number): string {
-  const icon = getPinIcon(type);
-  return `
-    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size + 10}" viewBox="0 0 24 34" aria-hidden="true">
-      <filter id="pinShadow" x="-20%" y="-20%" width="140%" height="150%">
-        <feDropShadow dx="0" dy="2" stdDeviation="1.6" flood-color="#1C0F08" flood-opacity="0.25" />
-      </filter>
-      <g filter="url(#pinShadow)">
-        <circle cx="12" cy="12" r="10.2" fill="${color}" opacity="0.22" />
-        <path d="M12 32 6.9 21.4h10.2L12 32Z" fill="${color}" stroke="white" stroke-width="1.2" stroke-linejoin="round"/>
-        <circle cx="12" cy="12" r="9" fill="${color}" stroke="white" stroke-width="2.2" />
-        ${icon}
-      </g>
-    </svg>
-  `;
-}
+// Pin SVG is rendered by the PinSvg component (imported above).
 
 // ---------------------------------------------------------------------------
 // Cluster utilities
@@ -131,6 +77,8 @@ function clusterFontSize(count: number): number {
 // ---------------------------------------------------------------------------
 
 // Merge all mappable items
+// Items without coordinates (odcb-s-011, odcb-b-021) are filtered out here.
+// Their geocoding data will be handled in the data source files.
 const allItems: CulturalItem[] = [
   ...allCulturalSites,
   ...wbtbItems,
@@ -169,6 +117,15 @@ export default function CultureMap({
       return false;
     });
   }, [activeLayers]);
+
+  const legendCounts = useMemo(
+    () => ({
+      cb: allItems.filter((i) => i.type === "cagar-budaya").length,
+      odcb: allItems.filter((i) => i.type === "odcb").length,
+      wbtb: allItems.filter((i) => i.type === "wbtb").length,
+    }),
+    [],
+  );
 
   const currentZoom = viewState.zoom ?? DEFAULT_ZOOM;
   const isClustered = clusterEnabled && currentZoom < CLUSTER_ZOOM;
@@ -436,16 +393,23 @@ export default function CultureMap({
                   }}
                 >
                   <div
-                    className="cursor-pointer transition-transform hover:scale-125"
+                    className="cursor-pointer transition-transform hover:scale-125 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C0392B] focus-visible:ring-offset-2 rounded-full"
                     title={item.name}
-                    dangerouslySetInnerHTML={{
-                      __html: buildPinSvg(
-                        item.type,
-                        badge.pinColor,
-                        badge.pinSize,
-                      ),
+                    tabIndex={0}
+                    role="button"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        handleMarkerClick(item);
+                      }
                     }}
-                  />
+                  >
+                    <PinSvg
+                      type={item.type}
+                      color={badge.pinColor}
+                      size={badge.pinSize}
+                    />
+                  </div>
                 </Marker>
               );
             })}
@@ -500,15 +464,15 @@ export default function CultureMap({
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-[#C0392B]" />
-              <span className="text-[#6B4F3A]">Cagar Budaya (5)</span>
+              <span className="text-[#6B4F3A]">Cagar Budaya ({legendCounts.cb})</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-[#8B5E34]" />
-              <span className="text-[#6B4F3A]">ODCB (54)</span>
+              <span className="text-[#6B4F3A]">ODCB ({legendCounts.odcb})</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-[#D4A843]" />
-              <span className="text-[#6B4F3A]">WBTB (6)</span>
+              <span className="text-[#6B4F3A]">WBTB ({legendCounts.wbtb})</span>
             </div>
           </div>
         </div>

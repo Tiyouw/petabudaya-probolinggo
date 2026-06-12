@@ -107,7 +107,7 @@ export default function Sidebar() {
   const handleNav = useCallback(
     (id: string) => {
       if (id === "opk") {
-        setExpandedId(expandedId === "opk" ? null : "opk");
+        setExpandedId((prev) => (prev === "opk" ? null : "opk"));
       } else {
         setExpandedId(null);
         const el = document.getElementById(id);
@@ -117,7 +117,7 @@ export default function Sidebar() {
         }
       }
     },
-    [expandedId]
+    []
   );
 
   const handleOpkSub = useCallback((categoryId: string) => {

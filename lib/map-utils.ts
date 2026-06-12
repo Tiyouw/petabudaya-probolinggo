@@ -49,5 +49,6 @@ export function getDistrictCoord(districtName: string): { lat: number; lng: numb
 
 export function buildGoogleMapsUrl(lat: number | undefined, lng: number | undefined): string {
   if (lat === undefined || lng === undefined) return "#";
+  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return "#";
   return `https://www.google.com/maps?q=${lat},${lng}`;
 }
