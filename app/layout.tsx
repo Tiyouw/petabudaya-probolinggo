@@ -37,8 +37,8 @@ export const metadata: Metadata = {
     "Jawa Timur",
   ],
   icons: {
-    icon: "/assets/logos/Logo_Kabupaten_Probolinggo_-_Seal_of_Probolinggo_Regency.svg.png",
-    apple: "/assets/logos/Logo_Kabupaten_Probolinggo_-_Seal_of_Probolinggo_Regency.svg.png",
+    icon: "/favicon.png",
+    apple: "/favicon.png",
   },
   openGraph: {
     title: "PetaBudaya Probolinggo",
