@@ -25,7 +25,7 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "PetaBudaya Probolinggo — Jelajah Budaya Probolinggo",
   description:
-    "Peta interaktif cagar budaya, warisan budaya tak benda, dan objek pemajuan kebudayaan Kabupaten Probolinggo oleh Dinas Kebudayaan dan Pariwisata.",
+    "Peta interaktif cagar budaya, warisan budaya tak benda, dan objek pemajuan kebudayaan Kabupaten Probolinggo oleh Dinas Pendidikan dan Kebudayaan.",
   keywords: [
     "PetaBudaya",
     "Probolinggo",

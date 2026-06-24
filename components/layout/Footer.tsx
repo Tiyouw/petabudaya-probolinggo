@@ -32,15 +32,6 @@ export default function Footer() {
                     className="object-contain"
                   />
                 </div>
-                <div className="relative h-12 w-12">
-                  <Image
-                    src="/assets/logos/Coat_of_arms_of_the_City_of_Probolinggo.svg"
-                    alt="Lambang Kota Probolinggo"
-                    fill
-                    sizes="48px"
-                    className="object-contain"
-                  />
-                </div>
               </div>
               <div>
                 <h4
@@ -52,7 +43,7 @@ export default function Footer() {
               </div>
             </div>
             <p className="text-sm text-[#DDD0C0] leading-relaxed">
-              Dinas Kebudayaan dan Pariwisata
+              Dinas Pendidikan dan Kebudayaan
               <br />
               Kabupaten Probolinggo
             </p>
@@ -83,7 +74,7 @@ export default function Footer() {
               Sumber Data
             </h5>
             <p className="text-xs text-[#DDD0C0] leading-relaxed">
-              Data bersumber dari dokumen resmi Dinas Kebudayaan dan Pariwisata
+              Data bersumber dari dokumen resmi Dinas Pendidikan dan Kebudayaan
               Kabupaten Probolinggo. Beberapa data masih dalam proses validasi
               dan dapat diperbarui sewaktu-waktu. Koordinat presisi diambil dari
               geocoding OpenStreetMap/Nominatim.
@@ -95,7 +86,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-[#6B4F3A] mt-10 pt-6 text-center text-xs text-[#6B4F3A]">
-          &copy; {CURRENT_YEAR} Dinas Kebudayaan dan Pariwisata
+          &copy; {CURRENT_YEAR} Dinas Pendidikan dan Kebudayaan
           Kabupaten Probolinggo. Seluruh konten dalam proses validasi.
         </div>
       </div>

@@ -52,7 +52,7 @@ export default function CulturalOutro() {
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
-          Dinas Kebudayaan dan Pariwisata Kabupaten Probolinggo
+          Dinas Pendidikan dan Kebudayaan Kabupaten Probolinggo
         </motion.p>
 
         <motion.button

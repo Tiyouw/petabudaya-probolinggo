@@ -268,17 +268,6 @@ export default function HeroSection() {
                 priority
               />
             </div>
-            <div className="h-16 w-px bg-[#DDD0C0]" aria-hidden="true" />
-            <div className="relative h-20 w-20 sm:h-24 sm:w-24">
-              <Image
-                src="/assets/logos/Coat_of_arms_of_the_City_of_Probolinggo.svg"
-                alt="Lambang Kota Probolinggo"
-                fill
-                sizes="96px"
-                className="object-contain drop-shadow-[0_5px_12px_rgba(0,0,0,0.18)]"
-                priority
-              />
-            </div>
           </div>
         </motion.div>
 

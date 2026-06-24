@@ -20,7 +20,7 @@
 
 **PetaBudaya Probolinggo** adalah peta interaktif resmi yang menampilkan sebaran **Cagar Budaya**, **Warisan Budaya Tak Benda (WBTB)**, dan **Objek Pemajuan Kebudayaan (OPK)** di Kabupaten Probolinggo, Jawa Timur.
 
-Dibangun untuk **Dinas Kebudayaan dan Pariwisata Kabupaten Probolinggo** sebagai etalase digital inventaris budaya daerah, menggantikan dokumen PDF dan spreadsheet yang sebelumnya tersebar.
+Dibangun untuk **Dinas Pendidikan dan Kebudayaan Kabupaten Probolinggo** sebagai etalase digital inventaris budaya daerah, menggantikan dokumen PDF dan spreadsheet yang sebelumnya tersebar.
 
 ---
 
@@ -178,7 +178,7 @@ petabudaya-probolinggo/
 
 ## 🤝 Kontribusi
 
-Kontribusi terbuka untuk pengembang dari **Dinas Kebudayaan dan Pariwisata Kabupaten Probolinggo** dan komunitas.
+Kontribusi terbuka untuk pengembang dari **Dinas Pendidikan dan Kebudayaan Kabupaten Probolinggo** dan komunitas.
 
 ### Panduan Umum
 
@@ -222,7 +222,7 @@ Lihat [`TODO_FUTURE.md`](./TODO_FUTURE.md) untuk rencana pengembangan mendatang:
 
 ## 📄 Lisensi
 
-Proyek ini dibangun untuk **Dinas Kebudayaan dan Pariwisata Kabupaten Probolinggo**. Hak cipta dan lisensi dipegang oleh instansi terkait.
+Proyek ini dibangun untuk **Dinas Pendidikan dan Kebudayaan Kabupaten Probolinggo**. Hak cipta dan lisensi dipegang oleh instansi terkait.
 
 ---
 
@@ -232,5 +232,5 @@ Proyek ini dibangun untuk **Dinas Kebudayaan dan Pariwisata Kabupaten Probolingg
   <br /><br />
   <img src="public/assets/logos/Logo_Kabupaten_Probolinggo_-_Seal_of_Probolinggo_Regency.svg.png" alt="Kabupaten Probolinggo" width="60" />
   <br />
-  <sup>Dinas Kebudayaan dan Pariwisata Kabupaten Probolinggo</sup>
+  <sup>Dinas Pendidikan dan Kebudayaan Kabupaten Probolinggo</sup>
 </div>
